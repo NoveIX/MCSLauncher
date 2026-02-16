@@ -1,4 +1,4 @@
-# Minecraft Server Manager (MCSM)
+# Minecraft Script Launcher (MCSL)
 
 [![Bash](https://img.shields.io/badge/Bash-4%2B-brightgreen?style=for-the-badge)](https://www.gnu.org/software/bash/) [![tmux](https://img.shields.io/badge/tmux-required-blue?style=for-the-badge)](https://github.com/tmux/tmux) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -6,7 +6,7 @@
 
 ## 📝 Description
 
-**MCSM** is a lightweight runtime Bash script for managing a Minecraft server using [tmux](https://github.com/tmux/tmux). It provides simple commands to start, stop, restart, and access the server console, with built-in EULA handling and session management.
+**MCSL** is a lightweight runtime Bash script for managing a Minecraft server using [tmux](https://github.com/tmux/tmux). It provides simple commands to start, stop, restart, and access the server console, with built-in EULA handling and session management.
 
 ---
 
@@ -43,32 +43,32 @@
 2. **Clone or download this repository:**
 
 	```bash
-	git clone https://github.com/NoveIX/mcsm.git
-	cd mcsm
+	git clone https://github.com/NoveIX/mcsl.git
+	cd mcsl
 	```
 
 3. **Make the script executable:**
 
 	```bash
-	chmod +x mcsm.sh
+	chmod +x mcsl.sh
 	```
 
 4. **One-line (all-in-one) alternative:**
 
 	```bash
-	git clone https://github.com/NoveIX/mcsm.git && cd mcsm && chmod +x mcsm.sh
+	git clone https://github.com/NoveIX/mcsl.git && cd mcsl && chmod +x mcsl.sh
 	```
 
-5. **Place your Minecraft server files** (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh`, `eula.txt`, `user_jvm_args.txt`) in the modpack root alongside the `mcsm/` directory (see example below).
+5. **Place your Minecraft server files** (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh`, `eula.txt`, `user_jvm_args.txt`) in the modpack root alongside the `mcsl/` directory (see example below).
 
 6. **Example directory layout:**
 
 	```text
 	modpack/
 	├── libraries/
-	├── mcsm/
+	├── mcsl/
 	│   ├── LICENSE
-	│   ├── mcsm.sh        	<- Main entry
+	│   ├── mcsl.sh        	<- Main entry
 	│   ├── README.md
 	│   ├── source/
 	│   └── VERSION
@@ -86,7 +86,7 @@
 Run the script with one of the following commands:
 
 ```bash
-./mcsm.sh [option]
+./mcsl.sh [option]
 ```
 
 | Option            | Description                                             |
@@ -97,8 +97,8 @@ Run the script with one of the following commands:
 | `-c`, `--console` | Attach to the server console (tmux session).            |
 | `-n`, `--now`     | Stop or restart the server immediately without warning. |
 | `-h`, `--help`    | Show help information.                          		  |
-| `--mcsm-update`   | Update MCSM from the official Git repository.           |
-| `--version`       | Show the currently installed MCSM version.              |
+| `--mcsl-update`   | Update MCSL from the official Git repository.           |
+| `--version`       | Show the currently installed MCSL version.              |
 
 ---
 
@@ -118,7 +118,7 @@ Type `y` and press Enter to accept the EULA. The script will update `eula.txt` t
 
 - **Session naming:** The tmux session name is automatically derived from the modpack or server directory name and is sanitized for safety.
 - **tmux required:** All server management is handled via tmux — make sure it is installed and available in your PATH.
-- **Server launcher / files location:** By default, server files (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh` or `run.bat`, `eula.txt`, `user_jvm_args.txt`) are expected in the modpack root alongside the `mcsm/` directory (see the "Example directory layout" in Installation). The script will call your server launcher (e.g. `run.sh`) — ensure the launcher exists and is executable.
+- **Server launcher / files location:** By default, server files (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh` or `run.bat`, `eula.txt`, `user_jvm_args.txt`) are expected in the modpack root alongside the `mcsl/` directory (see the "Example directory layout" in Installation). The script will call your server launcher (e.g. `run.sh`) — ensure the launcher exists and is executable.
 - **Unix shell:** This script is intended for Unix-like shells. On Windows, use WSL, Cygwin, MSYS2 or another compatible environment with tmux available.
 
 ---
