@@ -34,4 +34,4 @@ sudo apt install -y tmux
 #deactivate
 
 # Set execute permissions for the main script
-chmod 764 "$FSYNC_ROOT/fsync.sh"
+chmod 764 "$FSYNC_ROOT/mcsl.sh"

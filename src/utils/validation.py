@@ -1,7 +1,6 @@
 # utils/validation.py
 
 import shutil
-import subprocess
 
 
 # Check installation of required software and dependencies

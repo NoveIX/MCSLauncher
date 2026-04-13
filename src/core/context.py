@@ -18,8 +18,9 @@ class Context:
 
     def __init__(self, project_root):
         self.project_root = project_root
+        self.tmux_name = Path(project_root).parent
         self.cfg_dir = Path(project_root, "cfg")
-        self.logs_dir = Path(project_root, "logs")
+        self.cfg_file = Path(self.cfg_dir, "server.json")
         self.version_file = Path(project_root, "src", "data", "current-version.txt")
 
     @classmethod

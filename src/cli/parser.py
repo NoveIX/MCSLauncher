@@ -56,7 +56,7 @@ def parse_args(ctx: Context):
     subparsers.add_parser("version")
 
     # Install
-    subparsers.add_parser("install")
+    subparsers.add_parser("init")
 
     # start
     subparsers.add_parser("start")

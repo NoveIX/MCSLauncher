@@ -15,7 +15,7 @@ def dispatch(args: Namespace, ctx: Context):
     Supported commands:
     - help
     - version
-    - install
+    - init
     - start
     - stop
     - restart
@@ -43,16 +43,16 @@ def dispatch(args: Namespace, ctx: Context):
             return print_current_version(ctx)
 
         # Install server
-        if args.command == "install":
-            from commands.init import install_server
+        if args.command == "init":
+            from commands.init import init_server
 
-            return init_server(args, ctx)
+            return init_server(ctx)
 
         # Start server
         if args.command == "start":
             from commands.start import start_server
 
-            return start_server(args, ctx)
+            return start_server(ctx)
 
         # Stop server
         if args.command == "stop":
@@ -70,7 +70,7 @@ def dispatch(args: Namespace, ctx: Context):
         if args.command == "console":
             from commands.console import console_server
 
-            return console_server(args, ctx)
+            return console_server(ctx)
 
         # Migrate server
         if args.command == "migrate":

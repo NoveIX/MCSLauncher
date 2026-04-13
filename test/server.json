@@ -9,8 +9,21 @@
     },
     "runtime": {
       "java": {
-        "mode": "local",
-        "path": null
+        "major": 17,
+        "location": {
+          "mode": "local",
+          "path": null
+        }
+      },
+      "server": {
+        "script": "Path",
+        "jvmArgs": {
+          "mode": "inline",
+          "args": [
+            "-Xms4G",
+            "-Xmx8G"
+          ]
+        }
       }
     },
     "behavior": {
