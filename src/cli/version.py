@@ -3,10 +3,10 @@
 from core.context import Context
 
 
-# get fsync version from file
+# get mcsl version from file
 def get_current_version(ctx: Context) -> str:
     """
-    Read and return the current fsync version from the VERSION file.
+    Read and return the current mcsl version from the VERSION file.
 
     Args:
         ctx (Context): Application context containing the path to the version file.
@@ -19,10 +19,10 @@ def get_current_version(ctx: Context) -> str:
         return f.read().strip()
 
 
-# print fsync version
+# print mcsl version
 def print_current_version(ctx: Context) -> None:
     """
-    Print the current fsync version to the console.
+    Print the current mcsl version to the console.
 
     Retrieves the version using the application context and outputs it
     in a human-readable format.

@@ -11,8 +11,6 @@ class Context:
     This context centralizes all important project directories such as:
     - project root
     - configuration directory
-    - temporary directory
-    - logs directory
     - version file path
 
     It is used to avoid hardcoding paths across the codebase.
@@ -20,6 +18,7 @@ class Context:
 
     def __init__(self, project_root):
         self.project_root = project_root
+        self.cfg_dir = Path(project_root, "cfg")
         self.logs_dir = Path(project_root, "logs")
         self.version_file = Path(project_root, "src", "data", "current-version.txt")
 

@@ -55,18 +55,21 @@ def parse_args(ctx: Context):
     # version
     subparsers.add_parser("version")
 
+    # Install
+    subparsers.add_parser("install")
+
     # start
     subparsers.add_parser("start")
 
     # stop
-    parser = subparsers.add_parser("stop", aliases=["exit", "e"])
-    parser.add_argument("-n", "--now", action="store_true")
-    parser.add_argument("-t", "--timer", type=int)
+    cmd_stop = subparsers.add_parser("stop")
+    cmd_stop.add_argument("-n", "--now", action="store_true")
+    cmd_stop.add_argument("-t", "--timer", type=int)
 
     # restart
-    parser = subparsers.add_parser("restart", aliases=["r", "re"])
-    parser.add_argument("-n", "--now", action="store_true")
-    parser.add_argument("-t", "--timer", type=int)
+    cmd_restart = subparsers.add_parser("restart", aliases=["r", "re"])
+    cmd_restart.add_argument("-n", "--now", action="store_true")
+    cmd_restart.add_argument("-t", "--timer", type=int)
 
     # console
     subparsers.add_parser("console")

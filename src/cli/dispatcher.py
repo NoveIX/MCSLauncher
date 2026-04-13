@@ -15,6 +15,7 @@ def dispatch(args: Namespace, ctx: Context):
     Supported commands:
     - help
     - version
+    - install
     - start
     - stop
     - restart
@@ -40,6 +41,12 @@ def dispatch(args: Namespace, ctx: Context):
             from cli.version import print_current_version
 
             return print_current_version(ctx)
+
+        # Install server
+        if args.command == "install":
+            from commands.init import install_server
+
+            return init_server(args, ctx)
 
         # Start server
         if args.command == "start":
@@ -80,6 +87,6 @@ def dispatch(args: Namespace, ctx: Context):
         raise KeyError
 
     except KeyError:
-        print("Unknown command. Use: fsync help")
+        print("Unknown command. Use: mcsl help")
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
