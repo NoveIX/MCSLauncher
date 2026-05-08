@@ -35,6 +35,6 @@ def write_json(file_path: Path, mcsl: dict) -> None:
     try:
         new_dir(file_path, True)
         with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(data, f, indent=4, ensure_ascii=False)
     except Exception as e:
         print(f"Could not write file: {e}")
