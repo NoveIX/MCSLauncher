@@ -25,4 +25,3 @@ check_command() {
         exit 1
     fi
 }
-
