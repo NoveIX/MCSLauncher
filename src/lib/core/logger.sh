@@ -31,7 +31,7 @@ logcolor_map() {
         error) printf -- '\033[31m' ;;
         fatal) printf -- '\033[35m' ;;
         done)  printf -- '\033[32m' ;;
-        *)     printf -- '\033[0m' ;;  # default safe
+        *)     printf -- '\033[0m' ;;
     esac
 }
 
@@ -45,7 +45,7 @@ should_log() {
 log_setting() {
     global_logfile="$1"
     global_minlevel="${2:-info}"
-    global_print="${3:-false}"
+    global_print="${3:-noprint}"
 
     # If global_logfile is set, create log file paths with date suffixes for organized logging.
     if [[ -n "$global_logfile" ]]; then
@@ -72,7 +72,7 @@ log() {
     should_log "$level" || return 0
 
     # terminal output
-    if [[ ${print,,} == "true" ]]; then
+    if [[ ${print,,} == "print" ]]; then
         printf '[%b%s\033[0m]: %s\n' \
         "$(logcolor_map "$level")" \
         "$level" \
@@ -108,7 +108,7 @@ log_warn() {
     log "WARN" "$1" "$2" "$3"
 
     # Print on warn file log
-    log "WARN" "$1" "false" "$global_logfile_warn"
+    log "WARN" "$1" "noprint" "$global_logfile_warn"
 }
 
 log_error() {
@@ -116,7 +116,7 @@ log_error() {
     log "ERROR" "$1" "$2" "$3"
 
     # Print on error file log
-    log "ERROR" "$1" "false" "$global_logfile_error"
+    log "ERROR" "$1" "noprint" "$global_logfile_error"
 }
 
 log_fatal() {
@@ -124,7 +124,7 @@ log_fatal() {
     log "FATAL" "$1" "$2" "$3"
 
     # Print on fatal file log
-    log "FATAL" "$1" "false" "$global_logfile_fatal"
+    log "FATAL" "$1" "noprint" "$global_logfile_fatal"
 }
 
 log_done() {

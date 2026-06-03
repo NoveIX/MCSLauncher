@@ -15,13 +15,13 @@ check_command() {
 
     # Check if the command argument is provided. If not, log a fatal error and exit.
     if [[ -z "$cmd" ]]; then
-        log_fatal "check_command: missing argument"
-        exit 1
+        log_fatal "No command specified for dependency check"
+        return 1
     fi
 
     # Check if a required command is available in the system. If not, log a fatal error and exit.
     if ! command -v "$cmd" >/dev/null 2>&1; then
-        log_fatal "missing required command: $cmd"
-        exit 1
+        log_fatal "Required command not found: $cmd"
+        return 1
     fi
 }

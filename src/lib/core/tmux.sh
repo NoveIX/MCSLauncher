@@ -26,7 +26,7 @@ tmux_exists() {
 tmux_attach() {
     local session="$1"
 
-    if tmux has-session -t "$session" 2>/dev/null; then
+    if tmux_exists "$session"; then
         log_info "Connecting to tmux session '$session'"
         tmux attach-session -t "$session"
     else

@@ -17,7 +17,6 @@ mcslver="${mcslver//[$'\t\r\n ']}"
 #   -e, --exit          Stop the server with a in-game warning seconds before shutdown.
 #   -r, --restart       Restart the server gracefully with an in-game warning.
 #   -c, --console       Attach to the server console (tmux session).
-#   -n, --now           Stop or restart the server immediately without warning.
 #   -h, --help          Display this help information.
 #   --selfupdate        Update MCSL from the official Git repository.
 #   --version           Show the currently installed MCSL version.
