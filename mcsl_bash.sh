@@ -1,32 +1,34 @@
 #!/usr/bin/env bash
 
-VERSION_FILE="$(dirname "$0")/VERSION"
-VERSION=$(<"$VERSION_FILE")
-VERSION="${VERSION//[$'\t\r\n ']}"
+version_file="$(dirname "$0")/version"
+mcslver=$(<"$version_file")
+mcslver="${mcslver//[$'\t\r\n ']}"
 
 # ---
-# Script Name:          mcsm.sh - Minecraft Server Manager
-# Description:          Runtime bash script for managing Minecraft servers
+# Script Name:          mcsl.sh - Minecraft Server Launcher
+# Description:          Runtime bash script for managing Minecraft servers.
+#                       Provides start, stop, restart, and console access functionalities.
+#                       Uses tmux for process management to keep the server running.
 #
-# Usage:                mcsm.sh [options]
+# Usage:                mcsl.sh [options]
 #
 # Options:
-#   -s, --start         Launch the server.
-#   -e, --exit          Stop the server gracefully with an in-game warning.
+#   -s, --start         Start the server.
+#   -e, --exit          Stop the server with a in-game warning seconds before shutdown.
 #   -r, --restart       Restart the server gracefully with an in-game warning.
 #   -c, --console       Attach to the server console (tmux session).
 #   -n, --now           Stop or restart the server immediately without warning.
 #   -h, --help          Display this help information.
-#   --mcsm-update       Update MCSM from the official Git repository.
-#   --version           Show the currently installed MCSM version.
+#   --selfupdate        Update MCSL from the official Git repository.
+#   --version           Show the currently installed MCSL version.
 #
 # Examples:
-#   ./mcsm.sh -c        Connect to tmux console
-#   ./mcsm.sh -r        Restart Minecraft server after 30 second and warn player
-#   ./mcsm.sh -rn       Restart Minecraft server in-game warning
-#   ./mcsm.sh -snc      Launch Minecraft server in-game warning and connect to tmux
-#   ./mcsm.sh --stop    Shutdown Minecraft server after 30 second and warn player
-#   ./mcsm.sh --start   Start Minecraft server
+#   ./mcsl.sh -c        Connect to tmux console
+#   ./mcsl.sh -r        Restart Minecraft server after 30 second and warn player
+#   ./mcsl.sh -rn       Restart Minecraft server in-game warning
+#   ./mcsl.sh -snc      Launch Minecraft server in-game warning and connect to tmux
+#   ./mcsl.sh --stop    Shutdown Minecraft server after 30 second and warn player
+#   ./mcsl.sh --start   Start Minecraft server
 #
 # Features:
 #   - Start, stop, and restart the server (graceful or immediate)
@@ -45,17 +47,17 @@ VERSION="${VERSION//[$'\t\r\n ']}"
 #
 # License:              GPL v3
 # Author:               NoveIX
-# Version:              $VERSION
+# Version:              $version
 # Date:                 2025-10-15
 # ---
 
 # =====================================[ Function ]===================================== #
 
 show_full_help() {
-    sed -n '/^# ---$/,/^# ---$/p' "$0" \
-    | sed '/^# ---$/d; s/^# \{0,1\}//' \
-    | while IFS= read -r line; do
-        echo "${line//\$VERSION/$VERSION}"
+    sed -n '/^# ---$/,/^# ---$/p' "$0" |
+    sed '/^# ---$/d; s/^# \{0,1\}//' |
+    while IFS= read -r line; do
+        printf '%s\n' "${line//\$version/$mcslver}"
     done
 }
 
