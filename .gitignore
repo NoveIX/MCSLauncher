@@ -3,3 +3,6 @@ cfg/
 
 # Logs dir
 logs/
+
+# Runtime dir
+src/runtime/

@@ -16,7 +16,7 @@ default_config() {
 # Server startup file provided by the JAR installer or custom script
 # In case of relative path, it will be resolved against the server directory
 # Support commands like "java -jar server.jar" or "./start.sh"
-StartCommand="run.sh"
+StartCommand=run.sh
 
 # Automatic restart in case of crash
 # Set to true to enable automatic restart, false to disable
@@ -25,7 +25,12 @@ CrashHandle=true
 # Number of restart attempts before stopping to avoid infinite loop
 # Set to a positive integer to limit the number of restarts
 # Set to 0 for unlimited retries
-CrashRetry=3
+MaxRestart=3
+
+# Delay in seconds between restart attempts to prevent rapid crash loops
+# Set to a positive integer to specify the delay duration
+# Set to 0 for no delay (not recommended)
+RetryDelay=120
 EOF
 }
 
@@ -62,8 +67,11 @@ read_config() {
             CrashHandle)
                 CrashHandle="$value"
                 ;;
-            CrashRetry)
-                CrashRetry="$value"
+            MaxRestart)
+                MaxRestart="$value"
+                ;;
+            RetryDelay)
+                RetryDelay="$value"
                 ;;
             *)
                 log_error "Unknown config key: $key"
@@ -80,15 +88,20 @@ read_config() {
 
     # Optional defaults
     CrashHandle="${CrashHandle:-true}"
-    CrashRetry="${CrashRetry:-3}"
+    MaxRestart="${MaxRestart:-3}"
+    RetryDelay="${RetryDelay:-120}"
 
     # Validation
     if [[ ! "$CrashHandle" =~ ^(true|false)$ ]]; then
         log_warn "Invalid CrashHandle value '$CrashHandle' (expected true|false)" "print"
     fi
 
-    if [[ ! "$CrashRetry" =~ ^[0-9]+$ ]]; then
-        log_warn "Invalid CrashRetry value '$CrashRetry' (expected integer)" "print"
+    if [[ ! "$MaxRestart" =~ ^[0-9]+$ ]]; then
+        log_warn "Invalid MaxRestart value '$MaxRestart' (expected integer)" "print"
+    fi
+
+    if [[ ! "$RetryDelay" =~ ^[0-9]+$ ]]; then
+        log_warn "Invalid RetryDelay value '$RetryDelay' (expected integer)" "print"
     fi
 
     if [[ "$valid" != true ]]; then

@@ -65,23 +65,24 @@ log_setting() {
 log() {
     local level="$1"
     local message="$2"
-    local print="${3:-global_print}"
-    local path="${4:-global_logfile}"
+    local print="${3:-$global_print}"
+    local path="${4:-$global_logfile}"
 
     # log level check
     should_log "$level" || return 0
 
     # terminal output
     if [[ ${print,,} == "print" ]]; then
-        printf '[%b%s\033[0m]: %s\n' \
+        printf -- '[%b%s%b]: %s\n' \
         "$(logcolor_map "$level")" \
         "$level" \
+        "\033[0m" \
         "$message"
     fi
 
     # file output
     if [[ -n "$path" ]]; then
-        printf '[%s] [%s]: %s\n' \
+        printf -- '[%s] [%s]: %s\n' \
         "$(date '+%Y-%m-%d %H:%M:%S')" \
         "$level" \
         "$message" >> "$path"
