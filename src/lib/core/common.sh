@@ -9,6 +9,7 @@
 
 # ================================[ Function ]================================ #
 
+# Format a duration in seconds into a human-readable string (e.g., "1d 2h 3m 4s").
 format_duration() {
     local total_seconds=${1:-0}
 

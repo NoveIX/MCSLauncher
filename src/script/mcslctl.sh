@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# File: mcslctl.sh
+# Description: mcslctl mcsl controller for minecraft server
+# Usage: . ./mcslctl.sh
+# Author: NoveIX
+# Created: 2026-05-29
+# Last Updated: 2026-06-06
+# Version: 1.0.0
+# Requires: logger.sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # ===============================[ Parameter ]================================ #
 
 mcsl_dir="$1"
@@ -26,6 +36,7 @@ load_module "$core_dir/logger.sh"
 load_module "$core_dir/config.sh"
 load_module "$core_dir/common.sh"
 
+# Generate log setting behavior
 log_setting "$log_dir/mcslctl" "info" "print"
 
 # Read mcsl config behavior
@@ -37,50 +48,50 @@ cd "$mcsl_dir/.."
 
 # ==============================[ mcslctl core ]============================== #
 
-while [[ ${ctlstate,,} != "stop" ]]; do    
+while [[ ${ctlstate,,} != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
-    
+
     # Start minecraft server
     if [[ -f "$StartCommand" ]]; then
         bash "$StartCommand"
     else
         bash -c "$StartCommand"
     fi
-    printf -- "%s\n" "Server closed"
 
     # End timestamp
     ets=$(date +%s)
-    
+
     # Calculate uptime timestamp
     uts=$(( ets - sts ))
-    huts=$(format_duration "$uts")
-    log_info "Minecraft server stopped after $huts"
+    log_info "Minecraft server stopped after $(format_duration "$uts")"
 
     # Little delay before restart
     sleep 5
 
-    # Crash handling
+    # Check crash handling setting
     if [[ "${CrashHandle,,}" == "false" ]]; then
-        log_info "Crash handle disabled. Exit from tmux session"
+        log_info "Crash handling disabled. Exiting from tmux session"
         ctlstate="stop"; continue
     fi
 
-    # Received stop command
-    if [[ -f "$ctlrestart" ]]; then
-        log_error "Minecraft server crashed. restarting"
-    else
+    # Stop requested
+    if [[ ! -f "$ctlrestart" ]]; then
         ctlstate="stop"; continue
     fi
 
-    # Infinite loop protection
+    # Server crashed
+    (( ctlcrash++ ))
+    log_error "Minecraft server crashed. Restarting"
+
+    # Infinite restart loop protection
     if (( uts < RetryDelay )); then
-        (( ctlcrash++ ))
-        log_warn "Server crashed $ctlcrash times under $(format_duration "$RetryDelay")"
+        log_warn "Server crashed before running for $(format_duration "$RetryDelay")"
     fi
 
-    # Exit from infinite loop
+    # Check crash count
     if (( ctlcrash >= CrashRetry )); then
-        log_error "the
+        log_error "Server exceeded the maximum number of crash retries"
+        ctlstate="stop"; continue
     fi
 done

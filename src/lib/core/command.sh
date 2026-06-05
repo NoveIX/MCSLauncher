@@ -26,6 +26,9 @@ check_command() {
             warn)
                 log_warn "Required command not found: $cmd" "print"
                 ;;
+            error)
+                log_error "Required command not found: $cmd" "print"
+                ;;
             fatal)
                 log_fatal "Required command not found: $cmd" "print"
                 ;;

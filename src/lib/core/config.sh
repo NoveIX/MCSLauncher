@@ -9,6 +9,7 @@
 
 # ================================[ Function ]================================ #
 
+# Generate a default configuration file with example settings.
 default_config() {
     cat <<'EOF' > "$1"
 # Minecraft Server Launcher Config
@@ -34,6 +35,7 @@ RetryDelay=120
 EOF
 }
 
+# Trim leading and trailing whitespace from a string.
 trim() {
     local s="$1"
 
@@ -43,6 +45,7 @@ trim() {
     printf '%s\n' "$s"
 }
 
+# Read configuration from a file and set global variables accordingly. Validates required parameters and applies defaults for optional ones.
 read_config() {
     local config_file="$1"
     local key value
@@ -63,20 +66,20 @@ read_config() {
         case "$key" in
             StartCommand)
                 StartCommand="$value"
-                ;;
+            ;;
             CrashHandle)
                 CrashHandle="$value"
-                ;;
+            ;;
             MaxRestart)
                 MaxRestart="$value"
-                ;;
+            ;;
             RetryDelay)
                 RetryDelay="$value"
-                ;;
+            ;;
             *)
                 log_error "Unknown config key: $key"
                 valid=false
-                ;;
+            ;;
         esac
     done < "$config_file"
 

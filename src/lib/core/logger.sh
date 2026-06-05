@@ -9,6 +9,7 @@
 
 # ===============================[ Function map ]=============================== #
 
+# Map log levels to numeric values for comparison.
 loglevel_map() {
     case "${1,,}" in
         trace) printf -- '%s\n' 0 ;;
@@ -22,6 +23,7 @@ loglevel_map() {
     esac
 }
 
+# Map log levels to ANSI color codes for terminal output.
 logcolor_map() {
     case "${1,,}" in
         trace) printf -- '\033[90m' ;;
@@ -42,6 +44,7 @@ should_log() {
     (( $(loglevel_map "$1") >= $(loglevel_map "$global_minlevel") ))
 }
 
+# Set global log file paths and logging settings.
 log_setting() {
     global_logfile="$1"
     global_minlevel="${2:-info}"
@@ -55,6 +58,7 @@ log_setting() {
 
         mkdir -p "$logdir"
 
+        # Set global log file paths with date suffixes for different log levels.
         global_logfile="${logdir}/${logname}_${logdate}.log"
         global_logfile_warn="${logdir}/${logname}_${logdate}_warn.log"
         global_logfile_error="${logdir}/${logname}_${logdate}_error.log"
@@ -62,6 +66,7 @@ log_setting() {
     fi
 }
 
+# main log function that handles log level checking, terminal output, and file output based on the provided parameters.
 log() {
     local level="$1"
     local message="$2"
@@ -88,6 +93,8 @@ log() {
         "$message" >> "$path"
     fi
 }
+
+# Convenience functions for each log level that call the main log function with the appropriate parameters.
 
 log_trace() {
     # DarkGray TRACE log level.
