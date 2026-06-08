@@ -46,11 +46,19 @@ read_config() {
     local key value
     local valid=true
 
+    # Check mandatory parameter
+    if [[ -z "$config_file" ]]; then
+        log_error "read_config: missing required parameter: config_file" "print"
+        return 1
+    fi
+
+    # Check if config file exists
     if [[ ! -f "$config_file" ]]; then
         log_info "Generating default configuration" "print"
         default_config "$config_file"
     fi
 
+    # Check if config file is readable
     while IFS='=' read -r key value; do
         key="$(trim "$key")"
         value="$(trim "$value")"
@@ -95,7 +103,7 @@ read_config() {
     fi
 
     if [[ "$valid" != true ]]; then
-        log_error "Configuration validation failed"
+        log_error "Configuration validation failed" "print"
         return 1
     fi
 

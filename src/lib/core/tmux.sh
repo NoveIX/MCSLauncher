@@ -14,8 +14,11 @@
 tmux_exists() {
     local session="$1"
 
-    # Check if the session name is provided
-    [[ -z "$session" ]] && return 1
+    # Check mandatory parameter
+    if [[ -z "$session" ]]; then
+        log_error "tmux_exists: missing required parameter: session" "print"
+        return 1
+    fi
 
     # Check if the tmux session exists
     if tmux has-session -t "$session" 2>/dev/null; then
@@ -32,15 +35,15 @@ tmux_exists() {
 tmux_attach() {
     local session="$1"
 
-    # Check if the session name is provided
+    # Check mandatory parameter
     if [[ -z "$session" ]]; then
-        log_error "tmux_attach: missing session name"
+        log_error "tmux_attach: missing required parameter: session" "print"
         return 1
     fi
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found"
+        log_error "Session $session not found" "print"
         return 1
     fi
 
@@ -53,15 +56,15 @@ tmux_attach() {
 tmux_enter() {
     local session="$1"
 
-    # Check if the session name is provided
+    # Check mandatory parameter
     if [[ -z "$session" ]]; then
-        log_error "tmux_enter: missing session name"
+        log_error "tmux_enter: missing required parameter: session" "print"
         return 1
     fi
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found"
+        log_error "Session $session not found" "print"
         return 1
     fi
 
@@ -70,7 +73,7 @@ tmux_enter() {
         log_info "Sent ENTER to session $session"
         return 0
     else
-        log_error "Failed to send ENTER to session $session"
+        log_error "Failed to send ENTER to session $session" "print"
         return 1
     fi
 }
@@ -78,19 +81,25 @@ tmux_enter() {
 # Send a command to a tmux session
 tmux_send() {
     local session="$1"
+    
+    # Check mandatory parameter
+    if [[ -z "$session" ]]; then
+        log_error "tmux_send: missing required parameter: session" "print"
+        return 1
+    fi
 
     # Shift the command arguments to get the actual command to send
     shift
 
-    # Check if the session name and command are provided
-    if [[ -z "$session" || $# -eq 0 ]]; then
-        log_error "tmux_send: missing session or command"
+    # Check if command is provided
+    if [[ $# -eq 0 ]]; then
+        log_error "tmux_send: missing command" "print"
         return 1
     fi
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found"
+        log_error "Session $session not found" "print"
         return 1
     fi
 
@@ -99,7 +108,7 @@ tmux_send() {
         log_info "Sent command to $session: $*"
         return 0
     else
-        log_error "Failed to send command to $session: $*"
+        log_error "Failed to send command to $session: $*" "print"
         return 1
     fi
 }

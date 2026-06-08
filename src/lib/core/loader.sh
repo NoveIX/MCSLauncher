@@ -18,9 +18,9 @@ declare -A LOADED_MODULES
 load_module() {
     local module=$1
 
-    # Check if module path is provided
+    # Check mandatory parameter
     if [[ -z $module ]]; then
-        printf -- "load_module: missing module path\n" >&2
+        printf -- "load_module: missing required parameter: module\n" >&2
         return 1
     fi
 

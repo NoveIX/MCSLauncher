@@ -14,24 +14,29 @@ check_command() {
     local cmd="$1"
     local mode="${2:-fatal}"
 
-    # Check if the command argument is provided. If not, log a fatal error and exit.
+    # Check mandatory parameter
     if [[ -z "$cmd" ]]; then
-        log_fatal "No command specified for dependency check" "print"
+        log_error "check_command: missing required parameter: cmd" "print"
         return 1
     fi
 
-    # Check if a required command is available in the system. If not, log a fatal error and exit.
+    # Check if command exists
     if ! command -v "$cmd" >/dev/null 2>&1; then
+        local msg="Required command not found: $cmd"
+
         case "${mode,,}" in
             warn)
-                log_warn "Required command not found: $cmd" "print"
-                ;;
+                log_warn "$msg" "print"
+            ;;
             error)
-                log_error "Required command not found: $cmd" "print"
-                ;;
+                log_error "$msg" "print"
+            ;;
             fatal)
-                log_fatal "Required command not found: $cmd" "print"
-                ;;
+                log_fatal "$msg" "print"
+            ;;
+            *)
+                log_error "check_command: invalid mode '$mode' (defaulting to error): $msg" "print"
+            ;;
         esac
 
         return 1

@@ -9,12 +9,23 @@
 
 # ================================[ Command ]================================= #
 
-mcsl_stop() {
+stop_server() {
     local session_name="$1"
     local mcsl_dir="$2"
     local wait="${3:-0}"
     local mode="${4:-shutdown}"
     local core_dir="$mcsl_dir/src/lib/core"
+
+    # Check mandatory parameter
+    if [[ -z "$session_name" ]]; then
+        log_error "mcsl_stop: missing required parameter: session_name"
+        return 1
+    fi
+
+    if [[ -z "$mcsl_dir" ]]; then
+        log_error "mcsl_stop: missing required parameter: mcsl_dir"
+        return 1
+    fi
 
     # Load command module
     load_module "$core_dir/command.sh"

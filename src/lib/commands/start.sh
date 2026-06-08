@@ -9,11 +9,22 @@
 
 # ================================[ Command ]================================= #
 
-mcsl_start() {
+start_server() {
     local session_name="$1"
     local mcsl_dir="$2"
     local core_dir="$mcsl_dir/src/lib/core"
     local mcslctl="$mcsl_dir/src/script/mcslctl.sh"
+
+    # Check mandatory parameter
+    if [[ -z "$session_name" ]]; then
+        log_error "mcsl_start: missing required parameter: session_name"
+        return 1
+    fi
+
+    if [[ -z "$mcsl_dir" ]]; then
+        log_error "mcsl_start: missing required parameter: mcsl_dir"
+        return 1
+    fi
 
     # Load command module
     load_module "$core_dir/command.sh"
