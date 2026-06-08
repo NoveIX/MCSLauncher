@@ -25,13 +25,8 @@ CrashHandle=true
 
 # Number of restart attempts before stopping to avoid infinite loop
 # Set to a positive integer to limit the number of restarts
-# Set to 0 for unlimited retries
+# Set to -1 for unlimited retries
 MaxRestart=3
-
-# Delay in seconds between restart attempts to prevent rapid crash loops
-# Set to a positive integer to specify the delay duration
-# Set to 0 for no delay (not recommended)
-RetryDelay=120
 EOF
 }
 
@@ -73,9 +68,6 @@ read_config() {
             MaxRestart)
                 MaxRestart="$value"
             ;;
-            RetryDelay)
-                RetryDelay="$value"
-            ;;
             *)
                 log_error "Unknown config key: $key"
                 valid=false
@@ -92,7 +84,6 @@ read_config() {
     # Optional defaults
     CrashHandle="${CrashHandle:-true}"
     MaxRestart="${MaxRestart:-3}"
-    RetryDelay="${RetryDelay:-120}"
 
     # Validation
     if [[ ! "$CrashHandle" =~ ^(true|false)$ ]]; then
@@ -101,10 +92,6 @@ read_config() {
 
     if [[ ! "$MaxRestart" =~ ^[0-9]+$ ]]; then
         log_warn "Invalid MaxRestart value '$MaxRestart' (expected integer)" "print"
-    fi
-
-    if [[ ! "$RetryDelay" =~ ^[0-9]+$ ]]; then
-        log_warn "Invalid RetryDelay value '$RetryDelay' (expected integer)" "print"
     fi
 
     if [[ "$valid" != true ]]; then

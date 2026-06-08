@@ -45,22 +45,27 @@ read_config "$config_dir/mcsl-behavior.ini"
 
 # Change dir to minecraft server
 cd "$mcsl_dir/.."
+log_info "Changing working directory to the Minecraft server root"
 
 # ==============================[ mcslctl core ]============================== #
 
 while [[ ${ctlstate,,} != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
+    log_info "Start timestamp set to $sts"
 
     # Start minecraft server
     if [[ -f "$StartCommand" ]]; then
+        log_info "Starting Minecraft server using script: $StartCommand"
         bash "$StartCommand"
     else
+        log_info "Starting Minecraft server using configured command"
         bash -c "$StartCommand"
     fi
 
     # End timestamp
     ets=$(date +%s)
+    log_info "End timestamp set to $sts"
 
     # Calculate uptime timestamp
     uts=$(( ets - sts ))
@@ -84,14 +89,9 @@ while [[ ${ctlstate,,} != "stop" ]]; do
     (( ctlcrash++ ))
     log_error "Minecraft server crashed. Restarting"
 
-    # Infinite restart loop protection
-    if (( uts < RetryDelay )); then
-        log_warn "Server crashed before running for $(format_duration "$RetryDelay")"
-    fi
-
-    # Check crash count
-    if (( ctlcrash >= CrashRetry )); then
-        log_error "Server exceeded the maximum number of crash retries"
+    # Check crash retry limit
+    if (( CrashRetry > 0 && ctlcrash >= CrashRetry )); then
+        log_error "Crash limit reached (crash=$ctlcrash, max=$CrashRetry). Stopping server"
         ctlstate="stop"; continue
     fi
 done
