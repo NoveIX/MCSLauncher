@@ -10,7 +10,7 @@
 # ================================[ Command ]================================= #
 
 get_version() {
-    local file="$1"
+    local file="${1:-$version_file}"
 
     # Check mandatory parameter
     if [[ -z "$file" ]]; then
@@ -28,7 +28,7 @@ get_version() {
 }
 
 print_version() {
-    local file="$1"
+    local file="${1:-$version_file}"
     
     # Check mandatory parameter
     if [[ -z "$file" ]]; then

@@ -22,12 +22,12 @@ tmux_exists() {
 
     # Check if the tmux session exists
     if tmux has-session -t "$session" 2>/dev/null; then
-        log_trace "Tmux session '$session' exists"
+        log_trace "tmux session '$session' exists"
         return 0
     fi
 
     # Session does not exist
-    log_trace "Tmux session '$session' does not exist"
+    log_trace "tmux session '$session' does not exist"
     return 1
 }
 
@@ -43,12 +43,12 @@ tmux_attach() {
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found" "print"
+        log_error "session $session not found" "print"
         return 1
     fi
 
     # Attach to the tmux session
-    log_info "Attaching to session $session"
+    log_info "attaching to session $session"
     tmux attach-session -t "$session"
 }
 
@@ -64,16 +64,16 @@ tmux_enter() {
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found" "print"
+        log_error "session $session not found" "print"
         return 1
     fi
 
     # Send an ENTER key to the tmux session
     if tmux send-keys -t "$session" C-m; then
-        log_info "Sent ENTER to session $session"
+        log_info "sent ENTER to session $session"
         return 0
     else
-        log_error "Failed to send ENTER to session $session" "print"
+        log_error "failed to send ENTER to session $session" "print"
         return 1
     fi
 }

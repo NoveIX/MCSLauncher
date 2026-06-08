@@ -10,17 +10,12 @@
 # ================================[ Command ]================================= #
 
 print_help() {
-    local file="$1"
+    # Load mcsl commands
+    load_module "$commands_dir/version.sh" || return 1
 
-    # Check mandatory parameter
-    if [[ -z "$file" ]]; then
-        log_error "print_help: missing required parameter: file"
-        return 1
-    fi
-
-    local version="$(get_version "$file")"
+    local version="$(get_version)"
 
     cat <<EOF
-    ehlloewaewd
+version: $version
 EOF
 }

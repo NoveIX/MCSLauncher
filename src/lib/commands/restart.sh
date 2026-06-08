@@ -10,20 +10,12 @@
 # ================================[ Command ]================================= #
 
 restart_server() {
-    local session_name="$1"
-    local mcsl_dir="$2"
-    local wait="${3:-0}"
-    local core_dir="$mcsl_dir/src/lib/core"
-    local command_dir="$mcsl_dir/src/lib/commands"
+    local session="$1"
+    local wait="${2:-0}"
 
     # Check mandatory parameter
-    if [[ -z "$session_name" ]]; then
-        log_error "mcsl_restart: missing required parameter: session_name" "print"
-        return 1
-    fi
-
-    if [[ -z "$mcsl_dir" ]]; then
-        log_error "mcsl_restart: missing required parameter: mcsl_dir" "print"
+    if [[ -z "$session" ]]; then
+        log_error "mcsl_restart: missing required parameter: session" "print"
         return 1
     fi
 
@@ -36,10 +28,10 @@ restart_server() {
     load_module "$command_dir/start.sh" || exit 1
 
     # Restart Server
-    log_info "Restarting server at $(date '+%F %T')" "print"
-    mcsl_stop "$session_name" "$mcsl_dir" "$wait" "restart"
+    log_info "restarting server at $(date '+%F %T')" "print"
+    mcsl_stop "$session" "$mcsl_dir" "$wait" "restart"
 
     sleep 10
 
-    mcsl_start "$session_name" "$mcsl_dir"
+    mcsl_start "$session" "$mcsl_dir"
 }

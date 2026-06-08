@@ -10,19 +10,12 @@
 # ================================[ Command ]================================= #
 
 start_server() {
-    local session_name="$1"
-    local mcsl_dir="$2"
-    local core_dir="$mcsl_dir/src/lib/core"
-    local mcslctl="$mcsl_dir/src/script/mcslctl.sh"
+    local session="$1"
+    local console="$2"
 
     # Check mandatory parameter
-    if [[ -z "$session_name" ]]; then
-        log_error "mcsl_start: missing required parameter: session_name"
-        return 1
-    fi
-
-    if [[ -z "$mcsl_dir" ]]; then
-        log_error "mcsl_start: missing required parameter: mcsl_dir"
+    if [[ -z "$session" ]]; then
+        log_error "start_server: missing required parameter: session"
         return 1
     fi
 
@@ -36,7 +29,7 @@ start_server() {
 
     # Check if the tmux session already exists
     # If it does, log a warning and return with a specific code
-    if ! tmux_exists "$session_name"; then
+    if ! tmux_exists "$session"; then
         local runtime_dir="$mcsl_dir/src/runtime"
         local ctlrestart="$runtime_dir/mcslctl.restart"
 
@@ -44,13 +37,17 @@ start_server() {
 
         # ensure restart/keep-alive flag exists
         printf -- "%s\n" "Starting server at $(date '+%F %T')" >> "$ctlrestart"
-        log_info "Starting server at $(date '+%F %T')"
+        log_info "starting server at $(date '+%F %T')"
 
         # Create a new detached tmux session that runs the mcslctl script
-        tmux new-session -d -s "$session_name" -n "mcslctl" \
-        bash -c '"$0" "$@"' "$mcslctl" "$mcsl_dir"
+        tmux new-session -d -s "$session" -n "mcslctl" \
+        bash "$mcslctl" "$mcsl_dir"
+
+        if $console; then
+            tmux_attach "$session"
+        fi
     else
-        log_warn "tmux session $session_name already exists" "print"
+        log_warn "tmux session $session already exists" "print"
         return 2
     fi
 }

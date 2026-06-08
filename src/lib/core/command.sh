@@ -22,7 +22,7 @@ check_command() {
 
     # Check if command exists
     if ! command -v "$cmd" >/dev/null 2>&1; then
-        local msg="Required command not found: $cmd"
+        local msg="required command not found: $cmd"
 
         case "${mode,,}" in
             warn)

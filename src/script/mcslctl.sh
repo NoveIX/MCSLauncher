@@ -40,43 +40,43 @@ load_module "$core_dir/common.sh"
 log_setting "$log_dir/mcslctl" "info" "print"
 
 # Read mcsl config behavior
-log_info "Read mcsl config"
-read_config "$config_dir/mcsl-behavior.ini"
+log_info "read mcsl config"
+read_config "$config_dir/mcsl-behavior.ini" || exit 1
 
 # Change dir to minecraft server
 cd "$mcsl_dir/.."
-log_info "Changing working directory to the Minecraft server root"
+log_info "changing working directory to the Minecraft server root"
 
 # ==============================[ mcslctl core ]============================== #
 
 while [[ ${ctlstate,,} != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
-    log_info "Start timestamp set to $sts"
+    log_info "start timestamp set to $sts"
 
     # Start minecraft server
     if [[ -f "$StartCommand" ]]; then
-        log_info "Starting Minecraft server using script: $StartCommand"
+        log_info "starting Minecraft server using script: $StartCommand"
         bash "$StartCommand"
     else
-        log_info "Starting Minecraft server using configured command"
+        log_info "starting Minecraft server using configured command"
         bash -c "$StartCommand"
     fi
 
     # End timestamp
     ets=$(date +%s)
-    log_info "End timestamp set to $sts"
+    log_info "end timestamp set to $sts"
 
     # Calculate uptime timestamp
     uts=$(( ets - sts ))
-    log_info "Minecraft server stopped after $(format_duration "$uts")"
+    log_info "minecraft server stopped after $(format_duration "$uts")"
 
     # Little delay before restart
     sleep 5
 
     # Check crash handling setting
     if [[ "${CrashHandle,,}" == "false" ]]; then
-        log_info "Crash handling disabled. Exiting from tmux session"
+        log_info "crash handling disabled. Exiting from tmux session"
         ctlstate="stop"; continue
     fi
 
@@ -87,11 +87,14 @@ while [[ ${ctlstate,,} != "stop" ]]; do
 
     # Server crashed
     (( ctlcrash++ ))
-    log_error "Minecraft server crashed. Restarting"
+    log_error "minecraft server crashed. Restarting"
 
     # Check crash retry limit
-    if (( CrashRetry > 0 && ctlcrash >= CrashRetry )); then
-        log_error "Crash limit reached (crash=$ctlcrash, max=$CrashRetry). Stopping server"
+    if (( MaxRestart > 0 && ctlcrash >= MaxRestart )); then
+        log_error "crash limit reached (crash=$ctlcrash, max=$MaxRestart). Stopping server"
         ctlstate="stop"; continue
     fi
 done
+
+# sleep to ready logs before tmux session is closed
+sleep 5

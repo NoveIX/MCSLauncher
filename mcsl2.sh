@@ -2,19 +2,24 @@
 
 # set -euo pipefail
 
-# Path
-mcsl_path="$(realpath "$0")"
-mcsl_name="$(basename "$mcsl_path")"
-mcsl_dir="$(dirname "$mcsl_path")"
-log_dir="$mcsl_dir/logs"
-core_dir="$mcsl_dir/src/lib/core"
-commands_dir="$mcsl_dir/src/lib/commands"
+# Path and name variables
+readonly mcsl_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly mcsl_name="$(basename -- "${BASH_SOURCE[0]}")"
+readonly log_dir="$mcsl_dir/logs"
+readonly core_dir="$mcsl_dir/src/lib/core"
+readonly commands_dir="$mcsl_dir/src/lib/commands"
+readonly mcslctl="$mcsl_dir/src/script/mcslctl.sh"
+
+# Data
+readonly version_file="$mcsl_dir/version"
+
+# Server root
+readonly server_root="$(dirname "$mcsl_dir")"
 
 # tmux parameter
 session_name="$(basename "$server_root" | tr -d '[:space:]' | tr -c '[:alnum:]_.-' '_')"
-
-# Server root
-server_root="$(dirname "$mcsl_dir")"
+session_name="${session_name:0:32}"
+readonly session_name
 
 # ==============================[ Import module ]============================= #
 
@@ -23,7 +28,7 @@ server_root="$(dirname "$mcsl_dir")"
 if [ -f "$core_dir/loader.sh" ]; then
     source "$core_dir/loader.sh"
 else
-    printf -- "%s.\n" "fatal: module loader.sh not found. required to execute script " >&2
+    printf -- "%s.\n" "fatal: module loader.sh not found. required to execute script $mcsl_name" >&2
     exit 1
 fi
 
@@ -47,11 +52,11 @@ main() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --session|-s)
-                session="${2:-$session_name}"
+                session="$2"
                 shift 2
             ;;
             --time|-t)
-                time="${2:-0}"
+                time="$2"
                 shift 2
             ;;
             --console|-c)
@@ -64,6 +69,18 @@ main() {
             ;;
         esac
     done
+
+    # Validate command parameter
+    if [[ -z "${cmd:-}" ]]; then
+        log_error "missing command"
+        load_module "$commands_dir/help.sh"
+        print_help
+        return 1
+    fi
+
+    # Set default values for optional parameters
+    session=${session:-$session_name}
+    time=${time:-0}
     
     case "${cmd,,}" in
         # Start command. Starts the server.
@@ -85,19 +102,19 @@ main() {
         ;;
         
         # Console command. Attaches to the tmux session of the server.
-        console)
-            load_module "$commands_dir/console.sh"
-            tmux_attach "$session_name"
+        console|-c)
+            load_module "$core_dir/tmux.sh"
+            tmux_attach "$session"
         ;;
         
         # Status command. Prints the status of the server.
         status)
             load_module "$commands_dir/status.sh"
-            status_server "$session_name"
+            status_server "$session"
         ;;
         
         # Version command. Prints the version of mcsl.
-        version)
+        version|-v)
             load_module "$commands_dir/version.sh"
             print_version
         ;;
@@ -110,10 +127,15 @@ main() {
         
         # Default case. Prints the help message for mcsl.
         *)
+            log_error "unknown command: $cmd"
             load_module "$commands_dir/help.sh"
             print_help
         ;;
     esac
 }
 
-main $@
+# ==================================[ Main ]================================== #
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi
