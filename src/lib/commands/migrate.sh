@@ -1,10 +1,6 @@
 # File: migrate.sh
-# Description: migrate command functions for mcsl
-# Usage: . ./migrate.sh
+# Description: Migrate command functions for mcsl
 # Author: NoveIX
-# Created: 2026-06-03
-# Last Updated: 2026-06-03
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Command ]================================= #

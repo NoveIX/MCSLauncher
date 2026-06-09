@@ -1,10 +1,6 @@
 # File: help.sh
-# Description: help command functions for mcsl
-# Usage: . ./help.sh
+# Description: Help command functions for mcsl
 # Author: NoveIX
-# Created: 2026-06-03
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Command ]================================= #

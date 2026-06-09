@@ -1,10 +1,6 @@
 # File: start.sh
-# Description: start command functions for mcsl
-# Usage: . ./start.sh
+# Description: Start command functions for mcsl
 # Author: NoveIX
-# Created: 2026-06-03
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Command ]================================= #
@@ -22,7 +18,7 @@ start_server() {
     # Load command module
     load_module "$core_dir/command.sh"
     check_command "tmux" || exit 1
-    check_command "java" "warn"
+    check_command "java" "warn" || true
 
     # Load tmux module
     load_module "$core_dir/tmux.sh"
@@ -31,7 +27,7 @@ start_server() {
     # If it does, log a warning and return with a specific code
     if ! tmux_exists "$session"; then
         local runtime_dir="$mcsl_dir/src/runtime"
-        local ctlrestart="$runtime_dir/mcslctl.restart"
+        local ctlrestart="$runtime_dir/restartctl"
 
         mkdir -p "$runtime_dir"
 

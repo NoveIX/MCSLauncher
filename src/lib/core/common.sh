@@ -1,10 +1,6 @@
 # File: common.sh
-# Description: common utility functions for bash scripts
-# Usage: . ./command.sh
+# Description: Common utility functions for bash scripts
 # Author: NoveIX
-# Created: 2026-06-05
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Function ]================================ #

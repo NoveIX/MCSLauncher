@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
-# set -euo pipefail
+# File: mcsl.sh
+# Description: Minecraft Server Launcher
+# Author: NoveIX
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -euo pipefail
+
+# ===============================[ Parameter ]================================ #
 
 # Path and name variables
 readonly mcsl_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly mcsl_name="$(basename -- "${BASH_SOURCE[0]}")"
-readonly log_dir="$mcsl_dir/logs"
 readonly core_dir="$mcsl_dir/src/lib/core"
 readonly commands_dir="$mcsl_dir/src/lib/commands"
 readonly mcslctl="$mcsl_dir/src/script/mcslctl.sh"
@@ -36,12 +42,12 @@ fi
 load_module "$core_dir/logger.sh"
 
 # Generate log setting behavior
-log_setting "$log_dir/mcsl" "info" "print"
+log_setting "" "info" "print"
 
 # ================================[ Function ]================================ #
 
 main() {
-    local cmd="$1"
+    local cmd="${1:-}"
     shift || true
 
     local session=""
@@ -72,9 +78,7 @@ main() {
 
     # Validate command parameter
     if [[ -z "${cmd:-}" ]]; then
-        log_error "missing command"
-        load_module "$commands_dir/help.sh"
-        print_help
+        log_error "Missing command. Use '$0 -h' to display the available commands."
         return 1
     fi
 
@@ -102,7 +106,7 @@ main() {
         ;;
         
         # Console command. Attaches to the tmux session of the server.
-        console|-c)
+        console|--console|-c)
             load_module "$core_dir/tmux.sh"
             tmux_attach "$session"
         ;;
@@ -114,13 +118,13 @@ main() {
         ;;
         
         # Version command. Prints the version of mcsl.
-        version|-v)
+        version|--version|-v)
             load_module "$commands_dir/version.sh"
             print_version
         ;;
         
         # Help command. Prints the help message for mcsl.
-        help)
+        help|--help|-h)
             load_module "$commands_dir/help.sh"
             print_help
         ;;
@@ -128,14 +132,10 @@ main() {
         # Default case. Prints the help message for mcsl.
         *)
             log_error "unknown command: $cmd"
-            load_module "$commands_dir/help.sh"
-            print_help
         ;;
     esac
 }
 
 # ==================================[ Main ]================================== #
 
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    main "$@"
-fi
+main $@

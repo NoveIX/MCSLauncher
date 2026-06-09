@@ -1,10 +1,6 @@
 # File: logger.sh
-# Description: Logging utility functions for bash scripts
-# Usage: . ./logger.sh
+# Description: Logger utility functions for bash scripts
 # Author: NoveIX
-# Created: 2026-05-15
-# Last Updated: 2026-06-06
-# Version: 3.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ===============================[ Function map ]=============================== #
@@ -46,7 +42,7 @@ should_log() {
 
 # Set global log file paths and logging settings.
 log_setting() {
-    global_logfile="$1"
+    global_logfile="${1:-}"
     global_minlevel="${2:-info}"
     global_print="${3:-noprint}"
 
@@ -96,7 +92,7 @@ log() {
 
     # file output
     if [[ -n "$path" ]]; then
-        printf -- "%s %s: %s\n" \
+        printf -- "%s %s %s\n" \
         "$(date "+%Y-%m-%d %H:%M:%S")" \
         "$level" \
         "$message" >> "$path"
@@ -115,44 +111,50 @@ log() {
 
 log_trace() {
     # DarkGray TRACE log level.
-    log "trace" "$1" "$2" "$3"
+    log "trace" "${1:-}" "${2:-}" "${3:-}"
 }
 
 log_debug() {
     # Gray DEBUG log level.
-    log "debug" "$1" "$2" "$3"
+    log "debug" "${1:-}" "${2:-}" "${3:-}"
 }
 
 log_info() {
     # Blue INFO log level.
-    log "info" "$1" "$2" "$3"
+    log "info" "${1:-}" "${2:-}" "${3:-}"
 }
 
 log_warn() {
     # DarkYellow WARN log level.
-    log "warn" "$1" "$2" "$3"
+    log "warn" "${1:-}" "${2:-}" "${3:-}"
 
     # Print on warn file log
-    log "warn" "$1" "noprint" "$global_logfile_warn"
+    if [[ -n "${global_logfile_warn:-}" ]]; then
+        log "warn" "${1:-}" "noprint" "$global_logfile_warn"
+    fi
 }
 
 log_error() {
     # DarkRed ERROR log level.
-    log "error" "$1" "$2" "$3"
+    log "error" "${1:-}" "${2:-}" "${3:-}"
 
     # Print on error file log
-    log "error" "$1" "noprint" "$global_logfile_error"
+    if [[ -n "${global_logfile_error:-}" ]]; then
+        log "error" "${1:-}" "noprint" "$global_logfile_error"
+    fi
 }
 
 log_fatal() {
     # Magenta FATAL log level.
-    log "fatal" "$1" "$2" "$3"
+    log "fatal" "${1:-}" "${2:-}" "${3:-}"
 
     # Print on fatal file log
-    log "fatal" "$1" "noprint" "$global_logfile_fatal"
+    if [[ -n "${global_logfile_fatal:-}" ]]; then
+        log "fatal" "${1:-}" "noprint" "$global_logfile_fatal"
+    fi
 }
 
 log_done() {
     # Green DONE log level.
-    log "done" "$1" "$2" "$3"
+    log "done" "${1:-}" "${2:-}" "${3:-}"
 }

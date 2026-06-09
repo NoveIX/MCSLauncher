@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
 # File: mcslctl.sh
-# Description: mcslctl mcsl controller for minecraft server
-# Usage: . ./mcslctl.sh
+# Description: mcsl controller for minecraft server
 # Author: NoveIX
-# Created: 2026-05-29
-# Last Updated: 2026-06-06
-# Version: 1.0.0
-# Requires: logger.sh
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+set -euo pipefail
 
 # ===============================[ Parameter ]================================ #
 
@@ -19,15 +16,16 @@ core_dir="$mcsl_dir/src/lib/core"
 log_dir="$mcsl_dir/logs"
 
 # mcslctl state
-ctlstate="run"
-ctlcrash=0
-ctlrestart="$runtime_dir/mcslctl.restart"
+statectl="run"
+crashctl=0
+restartctl="$runtime_dir/restartctl"
 
 # Load loader module
 if [ -f "$core_dir/loader.sh" ]; then
     source "$core_dir/loader.sh"
 else
     printf -- "fatal: module loader.sh not found. required to execute script %s.\n" "$(basename "$0")" >&2
+    read -r -n1 -t 30 -p "Press any key to exit..."
     exit 1
 fi
 
@@ -49,7 +47,7 @@ log_info "changing working directory to the Minecraft server root"
 
 # ==============================[ mcslctl core ]============================== #
 
-while [[ ${ctlstate,,} != "stop" ]]; do
+while [[ ${statectl,,} != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
     log_info "start timestamp set to $sts"
@@ -77,22 +75,22 @@ while [[ ${ctlstate,,} != "stop" ]]; do
     # Check crash handling setting
     if [[ "${CrashHandle,,}" == "false" ]]; then
         log_info "crash handling disabled. Exiting from tmux session"
-        ctlstate="stop"; continue
+        statectl="stop"; continue
     fi
 
     # Stop requested
-    if [[ ! -f "$ctlrestart" ]]; then
-        ctlstate="stop"; continue
+    if [[ ! -f "$restartctl" ]]; then
+        statectl="stop"; continue
     fi
 
     # Server crashed
-    (( ctlcrash++ ))
+    (( crashctl++ ))
     log_error "minecraft server crashed. Restarting"
 
     # Check crash retry limit
-    if (( MaxRestart > 0 && ctlcrash >= MaxRestart )); then
-        log_error "crash limit reached (crash=$ctlcrash, max=$MaxRestart). Stopping server"
-        ctlstate="stop"; continue
+    if (( MaxRestart > 0 && crashctl >= MaxRestart )); then
+        log_error "crash limit reached (crash=$crashctl, max=$MaxRestart). Stopping server"
+        statectl="stop"; continue
     fi
 done
 

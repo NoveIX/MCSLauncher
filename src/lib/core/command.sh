@@ -1,11 +1,6 @@
 # File: command.sh
 # Description: Command utility functions for bash scripts
-# Usage: . ./command.sh
 # Author: NoveIX
-# Created: 2026-05-29
-# Last Updated: 2026-06-06
-# Version: 1.0.0
-# Requires: logger.sh
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Function ]================================ #

@@ -2,11 +2,7 @@
 
 # File: loader.sh
 # Description: Module loader for bash scripts
-# Usage: . ./loader.sh
 # Author: NoveIX
-# Created: 2026-05-15
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Function ]================================ #

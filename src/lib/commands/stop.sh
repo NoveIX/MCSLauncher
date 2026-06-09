@@ -1,10 +1,6 @@
 # File: stop.sh
-# Description: stop command functions for mcsl
-# Usage: . ./stop.sh
+# Description: Stop command functions for mcsl
 # Author: NoveIX
-# Created: 2026-06-03
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Command ]================================= #

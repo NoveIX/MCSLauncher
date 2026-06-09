@@ -1,10 +1,6 @@
 # File: config.sh
-# Description: config utility functions for bash scripts
-# Usage: . ./config.sh
+# Description: Config utility functions for bash scripts
 # Author: NoveIX
-# Created: 2026-06-3
-# Last Updated: 2026-06-06
-# Version: 1.0.0
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # ================================[ Function ]================================ #
@@ -42,24 +38,24 @@ trim() {
 
 # Read configuration from a file and set global variables accordingly. Validates required parameters and applies defaults for optional ones.
 read_config() {
-    local config_file="$1"
+    local cfg_file="$1"
     local key value
     local valid=true
 
     # Check mandatory parameter
-    if [[ -z "$config_file" ]]; then
+    if [[ -z "$cfg_file" ]]; then
         log_error "read_config: missing required parameter: config_file" "print"
         return 1
     fi
 
-    if [[ ! -d "$(dirname $config_file)" ]]; then
-        mkdir -p "$(dirname $config_file)"
+    if [[ ! -d "$(dirname $cfg_file)" ]]; then
+        mkdir -p "$(dirname $cfg_file)"
     fi
 
     # Check if config file exists
-    if [[ ! -f "$config_file" ]]; then
+    if [[ ! -f "$cfg_file" ]]; then
         log_info "Generating default configuration" "print"
-        default_config "$config_file"
+        default_config "$cfg_file"
     fi
 
     # Check if config file is readable
@@ -85,7 +81,7 @@ read_config() {
                 valid=false
             ;;
         esac
-    done < "$config_file"
+    done < "$cfg_file"
 
     # Required parameters
     if [[ -z "$StartCommand" ]]; then
