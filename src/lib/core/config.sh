@@ -54,7 +54,7 @@ read_config() {
 
     # Check if config file exists
     if [[ ! -f "$cfg_file" ]]; then
-        log_info "Generating default configuration" "print"
+        log_info "generating default configuration" "print"
         default_config "$cfg_file"
     fi
 
@@ -77,7 +77,7 @@ read_config() {
                 MaxRestart="$value"
             ;;
             *)
-                log_error "Unknown config key: $key"
+                log_error "unknown config key: $key"
                 valid=false
             ;;
         esac
@@ -85,7 +85,7 @@ read_config() {
 
     # Required parameters
     if [[ -z "$StartCommand" ]]; then
-        log_error "Missing required parameter: StartCommand" "print"
+        log_error "missing required parameter: StartCommand" "print"
         valid=false
     fi
 
@@ -95,19 +95,19 @@ read_config() {
 
     # Validation
     if [[ ! "$CrashHandle" =~ ^(true|false)$ ]]; then
-        log_warn "Invalid CrashHandle value '$CrashHandle' (expected true|false)" "print"
+        log_warn "invalid CrashHandle value '$CrashHandle' (expected true|false)" "print"
     fi
 
     if [[ ! "$MaxRestart" =~ ^[0-9]+$ ]]; then
-        log_warn "Invalid MaxRestart value '$MaxRestart' (expected integer)" "print"
+        log_warn "invalid MaxRestart value '$MaxRestart' (expected integer)" "print"
     fi
 
     if [[ "$valid" != true ]]; then
-        log_error "Configuration validation failed" "print"
+        log_error "configuration validation failed" "print"
         return 1
     fi
 
     # Result
-    log_info "Configuration loaded successfully"
+    log_info "configuration loaded successfully"
     return 0
 }

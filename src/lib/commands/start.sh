@@ -17,7 +17,7 @@ start_server() {
 
     # Load command module
     load_module "$core_dir/command.sh"
-    check_command "tmux" || exit 1
+    check_command "tmux" || return 1
     check_command "java" "warn" || true
 
     # Load tmux module
@@ -27,12 +27,12 @@ start_server() {
     # If it does, log a warning and return with a specific code
     if ! tmux_exists "$session"; then
         local runtime_dir="$mcsl_dir/src/runtime"
-        local ctlrestart="$runtime_dir/restartctl"
+        local restartctl="$runtime_dir/restartctl"
 
         mkdir -p "$runtime_dir"
 
         # ensure restart/keep-alive flag exists
-        printf -- "%s\n" "Starting server at $(date '+%F %T')" >> "$ctlrestart"
+        printf -- "%s\n" "Starting server at $(date '+%F %T')" >> "$restartctl"
         log_info "starting server at $(date '+%F %T')"
 
         # Create a new detached tmux session that runs the mcslctl script
@@ -44,6 +44,6 @@ start_server() {
         fi
     else
         log_warn "tmux session $session already exists" "print"
-        return 2
+        return 0
     fi
 }

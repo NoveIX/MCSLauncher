@@ -27,10 +27,10 @@ stop_server() {
     # Check if the tmux session exists. If it does, proceed with the shutdown process. If not, simply return without doing anything.
     if tmux_exists "$session"; then
         local runtime_dir="$mcsl_dir/src/runtime"
-        local ctlrestart="$runtime_dir/mcslctl.restart"
+        local restartctl="$runtime_dir/restartctl"
 
         # Remove any existing restart/keep-alive flag to ensure a clean shutdown process.
-        rm -f "$ctlrestart"
+        rm -f "$restartctl"
 
         # Stop the server with a warning message if the wait time is greater than 30 seconds, otherwise send the stop command immediately
         if (( wait > 30 )); then
@@ -45,7 +45,7 @@ stop_server() {
         fi
 
         # Send the stop command to the tmux session to initiate server shutdown and log the stopping time.
-        log_info "Stopping server at $(date '+%F %T')"
+        log_info "stopping server at $(date '+%F %T')"
         tmux_send "$session" "stop"
     fi
 }

@@ -96,7 +96,7 @@ main() {
         # Stop command. Stops the server with an optional delay before stopping.
         stop)
             load_module "$commands_dir/stop.sh"
-            stop_server "$session" "$time" $console
+            stop_server "$session" "$time" "shutdown"
         ;;
         
         # Restart command. Stops and then starts the server with a optional delay before stopping.

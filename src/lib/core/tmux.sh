@@ -17,12 +17,12 @@ tmux_exists() {
 
     # Check if the tmux session exists
     if tmux has-session -t "$session" 2>/dev/null; then
-        log_trace "tmux session '$session' exists"
+        log_trace "session $session exists"
         return 0
     fi
 
     # Session does not exist
-    log_trace "tmux session '$session' does not exist"
+    log_trace "session $session does not exist"
     return 1
 }
 
@@ -94,16 +94,45 @@ tmux_send() {
 
     # Check if the tmux session exists
     if ! tmux_exists "$session"; then
-        log_error "Session $session not found" "print"
+        log_error "session $session not found" "print"
         return 1
     fi
 
     # Send the command to the tmux session
     if tmux send-keys -t "$session" "$*" C-m; then
-        log_info "Sent command to $session: $*"
+        log_info "sent command to $session: $*"
         return 0
     else
-        log_error "Failed to send command to $session: $*" "print"
+        log_error "failed to send command to $session: $*" "print"
         return 1
     fi
+}
+
+tmux_wait() {
+    local session="$1"
+    local timeout="${2:-600}"   # default: 10 minutes
+    local elapsed=0
+
+    # Check mandatory parameter
+    if [[ -z "$session" ]]; then
+        log_error "tmux_wait: missing required parameter: session" "print"
+        return 1
+    fi
+
+    log_info "waiting for session $session to stop (timeout: ${timeout}s)"
+
+    # Wait until the tmux session no longer exists
+    while tmux_exists "$session"; do
+        sleep 1
+        ((elapsed++)) || true
+
+        # Check for timeout
+        if (( elapsed >= timeout )); then
+            log_error "timeout waiting for session $session to stop (${timeout}s)"
+            return 1
+        fi
+    done
+
+    log_info "session $session stopped"
+    return 0
 }

@@ -8,6 +8,7 @@
 restart_server() {
     local session="$1"
     local wait="${2:-0}"
+    local console="${3:-false}"
 
     # Check mandatory parameter
     if [[ -z "$session" ]]; then
@@ -17,17 +18,22 @@ restart_server() {
 
     # Load command module
     load_module "$core_dir/command.sh"
-    check_command "tmux" || exit 1
+    check_command "tmux" || return 1
+
+    # Load tmux module
+    load_module "$core_dir/tmux.sh"
 
     # Load mcsl commands
-    load_module "$command_dir/stop.sh" || exit 1
-    load_module "$command_dir/start.sh" || exit 1
+    load_module "$commands_dir/stop.sh" || return 1
+    load_module "$commands_dir/start.sh" || return 1
 
     # Restart Server
-    log_info "restarting server at $(date '+%F %T')" "print"
-    mcsl_stop "$session" "$mcsl_dir" "$wait" "restart"
+    if tmux_exists "$session"; then
+        log_info "restarting server at $(date '+%F %T')" "print"
+        stop_server "$session" "$wait" "restart"
+        tmux_wait "$session"
+        sleep 10
+    fi
 
-    sleep 10
-
-    mcsl_start "$session" "$mcsl_dir"
+    start_server "$session" $console
 }

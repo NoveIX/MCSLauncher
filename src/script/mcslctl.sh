@@ -50,27 +50,32 @@ log_info "changing working directory to the Minecraft server root"
 while [[ ${statectl,,} != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
-    log_info "start timestamp set to $sts"
+    log_debug "server start timestamp registered: $sts"
 
-    # Start minecraft server
+    # set return code for server start command
+    rc=0
+
+    # Start Minecraft server
     if [[ -f "$StartCommand" ]]; then
         log_info "starting Minecraft server using script: $StartCommand"
-        bash "$StartCommand"
+        bash "$StartCommand" || rc=$?
     else
-        log_info "starting Minecraft server using configured command"
-        bash -c "$StartCommand"
+        log_info "starting Minecraft server using configured command: $StartCommand"
+        bash -c "$StartCommand" || rc=$?
+    fi
+
+    # Log Minecraft server error
+    if (( rc != 0 )); then
+        log_error "Minecraft server start failed (cmd: $StartCommand, exit code: $rc)"
     fi
 
     # End timestamp
     ets=$(date +%s)
-    log_info "end timestamp set to $sts"
+    log_debug "server end timestamp registered: $ets"
 
     # Calculate uptime timestamp
     uts=$(( ets - sts ))
-    log_info "minecraft server stopped after $(format_duration "$uts")"
-
-    # Little delay before restart
-    sleep 5
+    log_info "minecraft server uptime: $(format_duration "$uts")"
 
     # Check crash handling setting
     if [[ "${CrashHandle,,}" == "false" ]]; then
@@ -84,15 +89,18 @@ while [[ ${statectl,,} != "stop" ]]; do
     fi
 
     # Server crashed
-    (( crashctl++ ))
-    log_error "minecraft server crashed. Restarting"
+    (( crashctl++ )) || true
+    log_warn "minecraft server crashed. Restarting (attempt $crashctl)"
 
     # Check crash retry limit
     if (( MaxRestart > 0 && crashctl >= MaxRestart )); then
-        log_error "crash limit reached (crash=$crashctl, max=$MaxRestart). Stopping server"
+        log_warn "crash limit reached (crash=$crashctl, max=$MaxRestart). Stopping server"
         statectl="stop"; continue
     fi
+
+    # Little delay before restart to prevent cpu saturation in case of instant crash loop
+    sleep 5
 done
 
-# sleep to ready logs before tmux session is closed
+# sleep to read logs before tmux session is closed
 sleep 5
