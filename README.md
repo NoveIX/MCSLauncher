@@ -6,133 +6,138 @@
 
 ## 📝 Description
 
-**MCSL** is a lightweight runtime Bash script for managing a Minecraft server using [tmux](https://github.com/tmux/tmux). It provides simple commands to start, stop, restart, and access the server console, with built-in EULA handling and session management.
+**MCSL** is a lightweight Bash-based Minecraft server launcher that runs the server inside a `tmux` session.
+It provides commands to start, stop, restart, attach to the console, query status, and self-update the launcher.
 
 ---
 
 ## ✨ Features
 
-- Start, stop, and restart your Minecraft server with simple commands
-- Open the server console in an interactive tmux session
-- Automatic EULA file creation and an interactive acceptance prompt
-- Session management to prevent duplicate or missing tmux sessions
-- Colorful, informative terminal output
-- Beginner-friendly usage and help menu
+- Start, stop, and restart a Minecraft server using a simple CLI wrapper
+- Attach to the Minecraft server console through `tmux`
+- Query online/offline status via TCP
+- Automatic crash-restart support with retry limits
+- Prevent duplicate `tmux` sessions for the same server
+- Built-in help and version reporting
 
 ---
 
 ## ⚙️ Requirements
 
-- **Bash** (version 4.4 or higher recommended)
-- **tmux** (must be installed and available in your PATH)
-- **sed**, **grep**, **realpath** (standard on most Unix-like systems)
-- Minecraft server files (for example `run.sh` and `eula.txt`)
+- **Bash** (4.4+ recommended)
+- **tmux** (available in `PATH`)
+- **git** (required for `selfupdate`)
+- Minecraft server startup script or command (for example `run.sh`)
 
-> **Note**: This script is designed for Unix-like environments (Linux, macOS, WSL). It will not run natively on Windows unless you provide a compatible environment such as WSL, Cygwin, MSYS2 or a Linux-like shell with tmux available.
+> **Note:** MCSL is intended for Unix-like environments. On Windows, use WSL, Cygwin, MSYS2, or another compatible shell with `tmux`.
 
 ---
 
 ## 🚀 Installation
 
-1. **Install [tmux](https://github.com/tmux/tmux):**
+1. Install `tmux`:
 
-	- On Ubuntu/Debian: `sudo apt-get install tmux`
-	- On CentOS/Fedora: `sudo dnf install tmux`
-	- On macOS (Homebrew): `brew install tmux`
+   - Ubuntu/Debian: `sudo apt-get install tmux`
+   - CentOS/Fedora: `sudo dnf install tmux`
+   - macOS (Homebrew): `brew install tmux`
 
-2. **Clone or download this repository:**
+2. Clone or download the repository:
 
-	```bash
-	git clone https://github.com/NoveIX/mcsl.git
-	cd mcsl
-	```
+   ```bash
+   git clone https://github.com/NoveIX/mcsl.git
+   cd mcsl
+   ```
 
-3. **Make the script executable:**
+3. Make the launcher executable:
 
-	```bash
-	chmod +x mcsl.sh
-	```
-
-4. **One-line (all-in-one) alternative:**
-
-	```bash
-	git clone https://github.com/NoveIX/mcsl.git && cd mcsl && chmod +x mcsl.sh
-	```
-
-5. **Place your Minecraft server files** (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh`, `eula.txt`, `user_jvm_args.txt`) in the modpack root alongside the `mcsl/` directory (see example below).
-
-6. **Example directory layout:**
-
-	```text
-	modpack/
-	├── libraries/
-	├── mcsl/
-	│   ├── LICENSE
-	│   ├── mcsl.sh        	<- Main entry
-	│   ├── README.md
-	│   ├── source/
-	│   └── VERSION
-	├── neoforge-21.1.208-installer.jar
-	├── neoforge-21.1.208-installer.jar.log
-	├── run.bat
-	├── run.sh            	<- Minecraft server start script
-	└── user_jvm_args.txt
-	```
+   ```bash
+   chmod +x mcsl.sh
+   ```
 
 ---
 
 ## 📦 Usage
 
-Run the script with one of the following commands:
+Run the launcher with a command:
 
 ```bash
-./mcsl.sh [option]
+./mcsl.sh <command> [options]
 ```
 
-| Option            | Description                                             |
-|-------------------|---------------------------------------------------------|
-| `-s`, `--start`   | Launch the server.                                      |
-| `-e`, `--exit`    | Stop the server gracefully with an in-game warning.     |
-| `-r`, `--restart` | Restart the server gracefully with an in-game warning.  |
-| `-c`, `--console` | Attach to the server console (tmux session).            |
-| `-n`, `--now`     | Stop or restart the server immediately without warning. |
-| `-h`, `--help`    | Show help information.                          		  |
-| `--mcsl-update`   | Update MCSL from the official Git repository.           |
-| `--version`       | Show the currently installed MCSL version.              |
+### Commands
+
+- `help`, `-h`, `--help` — show help information
+- `version`, `-v`, `--version` — show the installed MCSL version
+- `start` — start the Minecraft server
+- `stop` — stop the Minecraft server gracefully
+- `restart` — restart the Minecraft server gracefully
+- `console`, `-c`, `--console` — attach to the server `tmux` console
+- `status` — display the server status
+- `selfupdate` — update MCSL from the Git repository
+
+### Options
+
+- `-s`, `--session <name>` — tmux session name (default derived from server root)
+- `-t`, `--time <seconds>` — delay in seconds for stop/restart operations
+- `-c`, `--console` — attach to the tmux session after starting or restarting
+- `-h`, `--host <host>` — host to query for status (default: `localhost`)
+- `-p`, `--port <port>` — port to query for status (default: `25565`)
+
+### Examples
+
+```bash
+./mcsl.sh start
+./mcsl.sh stop --time 30
+./mcsl.sh restart --time 60 --console
+./mcsl.sh console
+./mcsl.sh status --host localhost --port 25565
+./mcsl.sh selfupdate
+```
 
 ---
 
-## 📄 EULA Handling
+## ⚙️ Configuration
 
-On first run, if `eula.txt` does not exist the script will create it with `eula=false`. If the EULA is not accepted you will see an interactive prompt similar to:
+The runtime controller is `src/script/mcslctl.sh`.
+It loads configuration from `cfg/mcsl-behavior.ini` and generates a default config if missing.
 
+Default config values:
+
+```ini
+StartCommand=run.sh
+CrashHandle=true
+MaxRestart=3
 ```
-The EULA is not accepted. Do you want to accept it now? [y/N]:
-```
 
-Type `y` and press Enter to accept the EULA. The script will update `eula.txt` to `eula=true` and continue. If you do not accept, the server will not start.
+- `StartCommand` — startup script or command used to launch the Minecraft server
+- `CrashHandle` — `true` to restart automatically after a crash; `false` to stop instead
+- `MaxRestart` — maximum crash restart attempts before stopping (use `-1` for unlimited retries)
 
 ---
 
-## 📝 Notes
+## 🧠 Behavior notes
 
-- **Session naming:** The tmux session name is automatically derived from the modpack or server directory name and is sanitized for safety.
-- **tmux required:** All server management is handled via tmux — make sure it is installed and available in your PATH.
-- **Server launcher / files location:** By default, server files (for example `config/`, `mods/`, `kubejs/`, `world/`, `run.sh` or `run.bat`, `eula.txt`, `user_jvm_args.txt`) are expected in the modpack root alongside the `mcsl/` directory (see the "Example directory layout" in Installation). The script will call your server launcher (e.g. `run.sh`) — ensure the launcher exists and is executable.
-- **Unix shell:** This script is intended for Unix-like shells. On Windows, use WSL, Cygwin, MSYS2 or another compatible environment with tmux available.
+- `start` launches `src/script/mcslctl.sh` inside a detached `tmux` session.
+- If the session already exists, `start` logs a warning and does not create a duplicate.
+- `stop` sends an in-game warning before issuing the `stop` command, honoring the configured delay.
+- `restart` stops the server, waits for the `tmux` session to terminate, then starts it again.
+- `status` checks TCP connectivity; for `localhost`, it reads `server.properties` to detect the actual server port.
+- `selfupdate` runs `git restore -- .` and `git pull` inside the MCSL directory.
+
+---
+
+## 📁 Project structure
+
+- `mcsl.sh` — main CLI entrypoint
+- `src/script/mcslctl.sh` — runtime controller loop
+- `src/lib/core/` — shared module utilities (`logger`, `config`, `tmux`, etc.)
+- `src/lib/commands/` — command handlers (`start`, `stop`, `restart`, `status`, `selfupdate`, `help`, `version`)
+- `src/runtime/` — runtime state files such as `restartctl`
+- `cfg/` — generated configuration directory
+- `logs/` — log files
 
 ---
 
 ## 📜 License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
-
----
-
-## ✒️ Author's note / Signature
-
-This repository started as a personal project to solve a problem at a personal level: making it easy and repeatable to manage Minecraft servers (start, stop, console access, and updates) using lightweight tools such as tmux. It is intended as a practical, field-tested utility rather than an enterprise-grade solution.
-
-Maintainer: NoveIX
-
-Created by NoveIX
