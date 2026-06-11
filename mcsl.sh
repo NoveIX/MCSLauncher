@@ -139,7 +139,7 @@ main() {
         # Status command. Prints the status of the server.
         status)
             load_module "$commands_dir/status.sh"
-            server_status "$host" "$port" "$session"
+            status_server "$host" "$port" "$session"
         ;;
 
         # SelfUpdate command. Updates the mcsl script itself.

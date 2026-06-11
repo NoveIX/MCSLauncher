@@ -7,7 +7,16 @@
 
 # Generate a default configuration file with example settings.
 default_config() {
-    cat <<"EOF" > "$1"
+    local cfg_file="$1"
+
+    # Check mandatory parameter
+    if [[ -z "$cfg_file" ]]; then
+        log_error "default_config: missing required parameter: config_file" "print"
+        return 1
+    fi
+
+    # Create and write default config
+    cat <<"EOF" > "$cfg_file"
 # Minecraft Server Launcher Config
 
 # Server startup file provided by the JAR installer or custom script
@@ -48,6 +57,7 @@ read_config() {
         return 1
     fi
 
+    # Ensure cfg dir
     if [[ ! -d "$(dirname $cfg_file)" ]]; then
         mkdir -p "$(dirname $cfg_file)"
     fi

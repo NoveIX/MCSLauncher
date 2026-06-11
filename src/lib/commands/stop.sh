@@ -12,17 +12,27 @@ stop_server() {
 
     # Check mandatory parameter
     if [[ -z "$session" ]]; then
-        log_error "mcsl_stop: missing required parameter: session"
+        log_error "stop_server: missing required parameter: session" "print"
+        return 1
+    fi
+
+    if [[ -z "$wait" ]]; then
+        log_error "stop_server: missing required parameter: wait" "print"
+        return 1
+    fi
+
+    if [[ -z "$mode" ]]; then
+        log_error "stop_server: missing required parameter: mode" "print"
         return 1
     fi
 
     # Load command module
-    load_module "$core_dir/command.sh"
+    load_module "$core_dir/command.sh" || return 1
     check_command "tmux" || return 1
 
     # Load tmux module
-    load_module "$core_dir/tmux.sh"
-    load_module "$core_dir/common.sh"
+    load_module "$core_dir/tmux.sh" || return 1
+    load_module "$core_dir/common.sh" || return 1
 
     # Check if the tmux session exists. If it does, proceed with the shutdown process. If not, simply return without doing anything.
     if tmux_exists "$session"; then
@@ -37,6 +47,8 @@ stop_server() {
             local prewarn=$((wait - 30))
             tmux_send "$session" "say Server will $mode in $wait seconds. Please prepare to disconnect."
             sleep "$prewarn"
+
+            # 30 Seconds - cit. Lester
             tmux_send "$session" "say Server will $mode in 30 seconds. Please prepare to disconnect."
             sleep 30
         else

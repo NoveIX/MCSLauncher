@@ -67,10 +67,10 @@ tmux_enter() {
     if tmux send-keys -t "$session" C-m; then
         log_info "sent ENTER to session $session"
         return 0
-    else
-        log_error "failed to send ENTER to session $session" "print"
-        return 1
     fi
+    
+    log_error "failed to send ENTER to session $session" "print"
+    return 1
 }
 
 # Send a command to a tmux session
@@ -102,10 +102,10 @@ tmux_send() {
     if tmux send-keys -t "$session" "$*" C-m; then
         log_info "sent command to $session: $*"
         return 0
-    else
-        log_error "failed to send command to $session: $*" "print"
-        return 1
     fi
+
+    log_error "failed to send command to $session: $*" "print"
+    return 1
 }
 
 tmux_wait() {
@@ -128,7 +128,7 @@ tmux_wait() {
 
         # Check for timeout
         if (( elapsed >= timeout )); then
-            log_error "timeout waiting for session $session to stop (${timeout}s)"
+            log_error "timeout waiting for session $session to stop (${timeout}s)" "print"
             return 1
         fi
     done

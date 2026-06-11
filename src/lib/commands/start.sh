@@ -11,17 +11,22 @@ start_server() {
 
     # Check mandatory parameter
     if [[ -z "$session" ]]; then
-        log_error "start_server: missing required parameter: session"
+        log_error "start_server: missing required parameter: session" "print"
+        return 1
+    fi
+
+    if [[ -z "$console" ]]; then
+        log_error "start_server: missing required parameter: console" "print"
         return 1
     fi
 
     # Load command module
-    load_module "$core_dir/command.sh"
+    load_module "$core_dir/command.sh" || return 1
     check_command "tmux" || return 1
     check_command "java" "warn" || true
 
     # Load tmux module
-    load_module "$core_dir/tmux.sh"
+    load_module "$core_dir/tmux.sh" || return 1
 
     # Check if the tmux session already exists
     # If it does, log a warning and return with a specific code
@@ -39,7 +44,8 @@ start_server() {
         tmux new-session -d -s "$session" -n "mcslctl" \
         bash "$mcslctl" "$mcsl_dir"
 
-        if $console; then
+        # Connect to tmux session
+        if [[ ${console,,} == "true" ]]; then
             tmux_attach "$session"
         fi
     else

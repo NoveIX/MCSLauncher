@@ -6,33 +6,20 @@
 # ================================[ Command ]================================= #
 
 get_version() {
-    local file="${1:-$version_file}"
-
     # Check mandatory parameter
-    if [[ -z "$file" ]]; then
-        log_error "get_version: missing required parameter: file"
-        return 1
-    fi
 
-    # Check if file exists and is readable
-    if [[ ! -r "$file" ]]; then
+    if [[ -z "$version_file" ]]; then
+        log_error "get_version: missing version file" "print"
         return 1
     fi
 
     # Extract version by removing whitespace
-    tr -d '[:space:]' < "$file"
+    tr -d '[:space:]' < "$version_file"
 }
 
 print_version() {
-    local file="${1:-$version_file}"
-    
-    # Check mandatory parameter
-    if [[ -z "$file" ]]; then
-        log_error "print_version: missing required parameter: file"
-        return 1
-    fi
-
-    local version="$(get_version "$file")"
+    # Get version from file
+    local version=$(get_version)
 
     cat <<EOF
 Minecraft Server Launcher (MCSL)

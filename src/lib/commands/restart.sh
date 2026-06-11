@@ -7,21 +7,31 @@
 
 restart_server() {
     local session="$1"
-    local wait="${2:-0}"
-    local console="${3:-false}"
+    local wait="$2"
+    local console="$3"
 
     # Check mandatory parameter
     if [[ -z "$session" ]]; then
-        log_error "mcsl_restart: missing required parameter: session" "print"
+        log_error "restart_server: missing required parameter: session" "print"
+        return 1
+    fi
+    
+    if [[ -z "$wait" ]]; then;
+        log_error "restart_server: missing required parameter: wait" "print"
+        return 1
+    fi
+    
+    if [[ -z "$console" ]]; then;
+        log_error "restart_server: missing required parameter: console" "print"
         return 1
     fi
 
     # Load command module
-    load_module "$core_dir/command.sh"
+    load_module "$core_dir/command.sh" || return 1
     check_command "tmux" || return 1
 
     # Load tmux module
-    load_module "$core_dir/tmux.sh"
+    load_module "$core_dir/tmux.sh" || return 1
 
     # Load mcsl commands
     load_module "$commands_dir/stop.sh" || return 1
@@ -29,7 +39,6 @@ restart_server() {
 
     # Restart Server
     if tmux_exists "$session"; then
-        log_info "restarting server at $(date '+%F %T')" "print"
         stop_server "$session" "$wait" "restart"
         tmux_wait "$session"
         sleep 10

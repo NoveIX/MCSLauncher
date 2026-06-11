@@ -12,7 +12,7 @@ declare -A LOADED_MODULES
 
 # Load a module by sourcing the specified file. Prevents multiple loads of the same module.
 load_module() {
-    local module=$1
+    local module="$1"
 
     # Check mandatory parameter
     if [[ -z $module ]]; then
