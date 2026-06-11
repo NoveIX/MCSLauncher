@@ -40,7 +40,7 @@ start_server() {
         printf -- "%s\n" "Starting server at $(date '+%F %T')" >> "$restartctl"
 
         # Create a new detached tmux session that runs the mcslctl script
-        log_info "starting server at $(date '+%F %T')" "print"
+        log_info "starting server $session at $(date '+%F %T')" "print"
         tmux new-session -d -s "$session" -n "mcslctl" \
         bash "$mcslctl" "$mcsl_dir"
 
