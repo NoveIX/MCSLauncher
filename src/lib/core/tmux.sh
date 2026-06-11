@@ -68,7 +68,7 @@ tmux_enter() {
         log_info "sent ENTER to session $session"
         return 0
     fi
-    
+
     log_error "failed to send ENTER to session $session" "print"
     return 1
 }
@@ -76,7 +76,7 @@ tmux_enter() {
 # Send a command to a tmux session
 tmux_send() {
     local session="$1"
-    
+
     # Check mandatory parameter
     if [[ -z "$session" ]]; then
         log_error "tmux_send: missing required parameter: session" "print"

@@ -98,7 +98,7 @@ main() {
     time=${time:-0}
     host=${host:-localhost}
     port=${port:-25565}
-    
+
     case "${cmd,,}" in
         # Help command. Prints the help message for mcsl.
         help|--help|-h)
@@ -117,25 +117,25 @@ main() {
             load_module "$commands_dir/start.sh"
             start_server "$session" $console
         ;;
-        
+
         # Stop command. Stops the server with an optional delay before stopping.
         stop)
             load_module "$commands_dir/stop.sh"
             stop_server "$session" "$time" "shutdown"
         ;;
-        
+
         # Restart command. Stops and then starts the server with a optional delay before stopping.
         restart)
             load_module "$commands_dir/restart.sh"
             restart_server "$session" "$time" $console
         ;;
-        
+
         # Console command. Attaches to the tmux session of the server.
         console|--console|-c)
             load_module "$core_dir/tmux.sh"
             tmux_attach "$session"
         ;;
-        
+
         # Status command. Prints the status of the server.
         status)
             load_module "$commands_dir/status.sh"
@@ -147,7 +147,7 @@ main() {
             load_module "$commands_dir/selfupdate.sh"
             selfupdate
         ;;
-        
+
         # Default case. Prints the help message for mcsl.
         *)
             log_error "unknown command: $cmd" "print"

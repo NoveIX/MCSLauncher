@@ -15,12 +15,12 @@ status_server() {
         log_error "server_status: missing required parameter: host" "print"
         return 1
     fi
-    
+
     if [[ -z "$port" ]]; then
         log_error "server_status: missing required parameter: port" "print"
         return 1
     fi
-    
+
     if [[ -z "$session" ]]; then
         log_error "server_status: missing required parameter: session" "print"
         return 1
