@@ -45,19 +45,19 @@ stop_server() {
         # Stop the server with a warning message if the wait time is greater than 30 seconds, otherwise send the stop command immediately
         if (( wait > 30 )); then
             local prewarn=$((wait - 30))
-            tmux_send "$session" "say Server will $mode in $wait seconds. Please prepare to disconnect."
+            tmux_send "$session" "say Server will $mode in $wait seconds. Please prepare to disconnect." "print"
             sleep "$prewarn"
 
             # 30 Seconds - cit. Lester
-            tmux_send "$session" "say Server will $mode in 30 seconds. Please prepare to disconnect."
+            tmux_send "$session" "say Server will $mode in 30 seconds. Please prepare to disconnect." "print"
             sleep 30
         else
-            tmux_send "$session" "say Server will $mode in $wait seconds. Please prepare to disconnect."
+            tmux_send "$session" "say Server will $mode in $wait seconds. Please prepare to disconnect." "print"
             sleep "$wait"
         fi
 
         # Send the stop command to the tmux session to initiate server shutdown and log the stopping time.
-        log_info "stopping server at $(date '+%F %T')"
+        log_info "stopping server at $(date '+%F %T')" "print"
         tmux_send "$session" "stop"
     fi
 }

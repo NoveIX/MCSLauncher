@@ -15,13 +15,13 @@ restart_server() {
         log_error "restart_server: missing required parameter: session" "print"
         return 1
     fi
-    
-    if [[ -z "$wait" ]]; then;
+
+    if [[ -z "$wait" ]]; then
         log_error "restart_server: missing required parameter: wait" "print"
         return 1
     fi
-    
-    if [[ -z "$console" ]]; then;
+
+    if [[ -z "$console" ]]; then
         log_error "restart_server: missing required parameter: console" "print"
         return 1
     fi
