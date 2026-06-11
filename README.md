@@ -27,7 +27,7 @@ It provides commands to start, stop, restart, attach to the console, query statu
 - **Bash** (4.4+ recommended)
 - **tmux** (available in `PATH`)
 - **git** (required for `selfupdate`)
-- Minecraft server startup script or command (for example `run.sh`)
+- Minecraft server startup script or command (for example `run.sh` or `java -jar server.jar`)
 
 > **Note:** MCSL is intended for Unix-like environments. On Windows, use WSL, Cygwin, MSYS2, or another compatible shell with `tmux`.
 
@@ -37,24 +37,48 @@ It provides commands to start, stop, restart, attach to the console, query statu
 
 1. Install `tmux`:
 
-   - Ubuntu/Debian: `sudo apt-get install tmux`
+   - Ubuntu/Debian: `sudo apt install tmux`
    - CentOS/Fedora: `sudo dnf install tmux`
    - macOS (Homebrew): `brew install tmux`
 
-2. Clone or download the repository:
+2. Install `git`
 
+   - Ubuntu/Debian: `sudo apt install git`
+   - CentOS/Fedora: `sudo dnf install git`
+   - macOS (Homebrew): `brew install git`
+
+3. **IMPORTANT**: move into your Minecraft server root directory (see example below).
+
+4. Clone or download the repository:
    ```bash
-   git clone https://github.com/NoveIX/mcsl.git
-   cd mcsl
+   git clone https://github.com/NoveIX/MCSLauncher.git ./mcsl
    ```
 
-3. Make the launcher executable:
-
+5. Make the launcher executable:
    ```bash
-   chmod +x mcsl.sh
+   chmod +x ./mcsl/mcsl.sh
    ```
 
----
+6. **Example** NeoForge Minecraft server root structure:
+   ```txt
+   modpack/
+      ├── libraries/
+      ├── mcsl/
+      │     ├── src/
+      │     ├── LICENSE
+      │     ├── mcsl.sh              <- Main entry
+      │     ├── README.md
+      │     └── version
+      ├── mods/
+      ├──
+      ├── neoforge-21.1.208-installer.jar
+      ├── neoforge-21.1.208-installer.jar.log
+      ├── run.bat
+      ├── run.sh                  <- Minecraft server start script
+      └── user_jvm_args.txt
+   ```
+
+7. Start mcsl for the first time
 
 ## 📦 Usage
 
