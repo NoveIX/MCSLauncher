@@ -17,17 +17,20 @@ selfupdate() {
     local output=$(git -C "$mcsl_dir" pull 2>&1)
     local status=$?
 
-    # Chck git pull exit code
-    if [[ $status -eq 0 ]]; then
+    # Check git pull exit code
+    if [[ "${status:-1}" -eq 0 ]]; then
 
-        # Check if version file exist
+        # Check if version file exists
         if [[ -f "$version_file" ]]; then
-            local new_version=$(get_version)
+            local new_version
+            new_version=$(get_version)
 
             # Check different version
             if [[ "$old_version" != "$new_version" ]]; then
                 log_info "mcsl update completed successfully" "print"
                 print_version
+            else
+                log_info "no changes were applied" "print"
             fi
         fi
     else
