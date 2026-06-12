@@ -27,7 +27,8 @@ selfupdate() {
 
             # Check different version
             if [[ "$old_version" != "$new_version" ]]; then
-                log_info "mcsl update completed successfully" "print"
+                log_info "mcsl update completed" "print"
+                printf -- "\n"
                 print_version
             else
                 log_info "mcsl is already running the latest version" "print"
