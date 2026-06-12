@@ -49,8 +49,31 @@ log_setting "$log_dir/mcsl" "info" "" "united"
 
 main() {
     local cmd="${1:-}"
+
+    # Validate command parameter
+    if [[ -z "$cmd" ]]; then
+        log_error "missing command. Use $0 -h to display the available commands." "print"
+        return 1
+    fi
+
+    # If the command is help, print help immediately and skip flag parsing.
+    if [[ "${cmd,,}" =~ ^(help|--help|-h)$ ]]; then
+        load_module "$commands_dir/help.sh"
+        print_help
+        return 0
+    fi
+
+    # If the command is version, print version immediately and skip flag parsing.
+    if [[ "${cmd,,}" =~ ^(version|--version|-v)$ ]]; then
+        load_module "$commands_dir/version.sh"
+        print_version
+        return 0
+    fi
+
+    # Shift the command parameter to parse flags
     shift || true
 
+    # Initialize variables for flags
     local session=""
     local time=""
     local console="false"
@@ -98,12 +121,6 @@ main() {
         esac
     done
 
-    # Validate command parameter
-    if [[ -z "${cmd:-}" ]]; then
-        log_error "missing command. Use '$0 -h' to display the available commands." "print"
-        return 1
-    fi
-
     # Set default values for optional parameters
     session=${session:-$session_name}
     time=${time:-0}
@@ -111,18 +128,6 @@ main() {
     port=${port:-25565}
 
     case "${cmd,,}" in
-        # Help command. Prints the help message for mcsl.
-        help|--help|-h)
-            load_module "$commands_dir/help.sh"
-            print_help
-        ;;
-
-        # Version command. Prints the version of mcsl.
-        version|--version|-v)
-            load_module "$commands_dir/version.sh"
-            print_version
-        ;;
-
         # Start command. Starts the server.
         start)
             load_module "$commands_dir/start.sh"

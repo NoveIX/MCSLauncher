@@ -33,6 +33,7 @@ Options:
   -s, --session <name>    Name of the tmux session to use (default: derived from server root).
   -t, --time <seconds>    Delay in seconds for stop/restart operations.
   -c, --console           Attach to the tmux session after starting or restarting.
+  -a, --all               Apply the command to all servers in the parent container directory.
   -h, --host <host>       Host to query for status (default: localhost).
   -p, --port <port>       Port to query for status (default: 25565).
 
