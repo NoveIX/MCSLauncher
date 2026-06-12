@@ -6,6 +6,12 @@
 # ================================[ Command ]================================= #
 
 selfupdate() {
+    # Load command module
+    load_module "$core_dir/command.sh" || return 1
+
+    # Check required command
+    check_command "git" || return 1
+
     # Load mcsl commands
     load_module "$commands_dir/version.sh" || return 1
     local old_version=$(get_version)

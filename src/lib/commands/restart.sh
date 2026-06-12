@@ -28,14 +28,16 @@ restart_server() {
 
     # Load command module
     load_module "$core_dir/command.sh" || return 1
+
+    # Check required command
     check_command "tmux" || return 1
 
     # Load tmux module
     load_module "$core_dir/tmux.sh" || return 1
 
     # Load mcsl commands
-    load_module "$commands_dir/stop.sh" || return 1
     load_module "$commands_dir/start.sh" || return 1
+    load_module "$commands_dir/stop.sh" || return 1
 
     # Restart Server
     if tmux_exists "$session"; then

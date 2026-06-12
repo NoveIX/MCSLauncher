@@ -28,11 +28,13 @@ stop_server() {
 
     # Load command module
     load_module "$core_dir/command.sh" || return 1
+
+    # Check required command
     check_command "tmux" || return 1
 
     # Load tmux module
-    load_module "$core_dir/tmux.sh" || return 1
     load_module "$core_dir/common.sh" || return 1
+    load_module "$core_dir/tmux.sh" || return 1
 
     # Check if the tmux session exists. If it does, proceed with the shutdown process. If not, simply return without doing anything.
     if tmux_exists "$session"; then

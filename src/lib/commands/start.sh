@@ -22,6 +22,8 @@ start_server() {
 
     # Load command module
     load_module "$core_dir/command.sh" || return 1
+
+    # Check required command
     check_command "tmux" || return 1
     check_command "java" "warn" || true
 
