@@ -61,7 +61,7 @@ status_server() {
     # STATUS COMMAND EXECUTION
 
     # Function var
-    local address=""
+    local address
 
     # Color var
     local green="\033[32m"
@@ -78,7 +78,8 @@ status_server() {
         load_module "$core_dir/server.sh"
 
         # Get Minecraft server port
-        port=$(get_port "$server_root/server.properties")
+        port=$(get_port "$server_root/server.properties") || return 1
+
         address="$session"
     else
         address="$host"

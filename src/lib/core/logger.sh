@@ -69,18 +69,41 @@ log() {
     local message="$2"
     local print="${3:-$global_print}"
     local path="${4:-$global_logfile}"
+    local out_mode="${5:-both}"
 
     # log level check
     should_log "$level" || return 0
 
+    local color reset="\033[0m"
+    color="$(logcolor_map "$level")"
+
     # terminal output
     if [[ ${print,,} == "print" ]]; then
-        printf -- "%b%s%b: %s\n" \
-        "$(logcolor_map "$level")" \
-        "${level,,}" \
-        "\033[0m" \
-        "$message"
+        case "${out_mode,,}" in
+            out)
+                printf "%b%s%b: %s\n" "$color" "${level,,}" "$reset" "$message"
+                ;;
+            err)
+                printf "%b%s%b: %s\n" "$color" "${level,,}" "$reset" "$message" >&2
+                ;;
+            both)
+                printf "%b%s%b: %s\n" "$color" "${level,,}" "$reset" "$message"
+                printf "%b%s%b: %s\n" "$color" "${level,,}" "$reset" "$message" >&2
+                ;;
+            none)
+                ;;
+        esac
     fi
+
+
+    # terminal output
+    #if [[ ${print,,} == "print" ]]; then
+    #    printf -- "%b%s%b: %s\n" \
+    #    "$(logcolor_map "$level")" \
+    #    "${level,,}" \
+    #    "\033[0m" \
+    #    "$message"
+    #fi
 
     ## terminal output
     #if [[ ${print,,} == "print" ]]; then
