@@ -9,8 +9,9 @@ status_server() {
     local host="$1"
     local port="$2"
     local session="$3"
+    local all="$4"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$host" ]]; then
         log_error "server_status: missing required parameter: host" "print"
         return 1
@@ -24,6 +25,22 @@ status_server() {
     if [[ -z "$session" ]]; then
         log_error "server_status: missing required parameter: session" "print"
         return 1
+    fi
+
+    # Remote session delegation
+    if [[ "${all,,}" == "true" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        for dir in "$server_container"/*/; do
+            [[ -d "$dir" ]] || continue
+
+            session="${dir%/}"
+            session="${session##*/}"
+
+            call_mcsl "$session" status
+        done
+
+        return 0
     fi
 
     # Function var

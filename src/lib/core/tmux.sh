@@ -9,7 +9,7 @@
 tmux_exists() {
     local session="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "tmux_exists: missing required parameter: session" "print"
         return 1
@@ -30,7 +30,7 @@ tmux_exists() {
 tmux_attach() {
     local session="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "tmux_attach: missing required parameter: session" "print"
         return 1
@@ -51,7 +51,7 @@ tmux_attach() {
 tmux_enter() {
     local session="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "tmux_enter: missing required parameter: session" "print"
         return 1
@@ -77,7 +77,7 @@ tmux_enter() {
 tmux_send() {
     local session="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "tmux_send: missing required parameter: session" "print"
         return 1
@@ -113,7 +113,7 @@ tmux_wait() {
     local timeout="${2:-600}"   # default: 10 minutes
     local elapsed=0
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "tmux_wait: missing required parameter: session" "print"
         return 1

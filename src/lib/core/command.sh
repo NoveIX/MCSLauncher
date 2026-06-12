@@ -9,7 +9,7 @@ check_command() {
     local cmd="$1"
     local mode="${2:-fatal}"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$cmd" ]]; then
         log_error "check_command: missing required parameter: cmd" "print"
         return 1

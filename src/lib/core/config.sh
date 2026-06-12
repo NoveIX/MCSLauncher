@@ -9,7 +9,7 @@
 default_config() {
     local cfg_file="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$cfg_file" ]]; then
         log_error "default_config: missing required parameter: config_file" "print"
         return 1
@@ -51,7 +51,7 @@ read_config() {
     local key value
     local valid=true
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$cfg_file" ]]; then
         log_error "read_config: missing required parameter: config_file" "print"
         return 1

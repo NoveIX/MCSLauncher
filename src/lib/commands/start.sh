@@ -9,7 +9,7 @@ start_server() {
     local session="$1"
     local console="$2"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "start_server: missing required parameter: session" "print"
         return 1
@@ -20,15 +20,30 @@ start_server() {
         return 1
     fi
 
-    # Load command module
-    load_module "$core_dir/command.sh" || return 1
+    # Remote session delegation
+    if [[ "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh"
 
-    # Check required command
+        local args=()
+
+        # Only pass the --console flag if console is set to true (case-insensitive)
+        if [[ "${console,,}" == "true" ]]; then
+            args+=(--console)
+        fi
+
+        # Call command in the specified session
+        if call_mcsl "$session" start "${args[@]}"; then
+            return 0
+        fi
+    fi
+
+    # Load required modules
+    load_module "$core_dir/command.sh" || return 1
+    load_module "$core_dir/tmux.sh" || return 1
+
+    # Check required dependencies
     check_command "tmux" || return 1
     check_command "java" "warn" || true
-
-    # Load tmux module
-    load_module "$core_dir/tmux.sh" || return 1
 
     # Check if the tmux session already exists
     # If it does, log a warning and return with a specific code

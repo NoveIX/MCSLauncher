@@ -8,7 +8,7 @@
 get_port() {
     local file="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$file" ]]; then
         log_error "get_port: missing required parameter: file" "print"
         return 1

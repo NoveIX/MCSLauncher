@@ -7,17 +7,17 @@
 
 restart_server() {
     local session="$1"
-    local wait="$2"
+    local time="$2"
     local console="$3"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z "$session" ]]; then
         log_error "restart_server: missing required parameter: session" "print"
         return 1
     fi
 
-    if [[ -z "$wait" ]]; then
-        log_error "restart_server: missing required parameter: wait" "print"
+    if [[ -z "$time" ]]; then
+        log_error "restart_server: missing required parameter: time" "print"
         return 1
     fi
 
@@ -26,25 +26,37 @@ restart_server() {
         return 1
     fi
 
-    # Load command module
+    # Remote session delegation
+    if [[ "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        local args=()
+
+        # Only pass the --console flag if console is set to true (case-insensitive)
+        if [[ "${console,,}" == "true" ]]; then
+            args+=(--console)
+        fi
+
+        # Call command in the specified session
+        if call_mcsl "$session" restart --time "$time" "${args[@]}"; then
+            return 0
+        fi
+    fi
+
+    # Load required modules
     load_module "$core_dir/command.sh" || return 1
-
-    # Check required command
-    check_command "tmux" || return 1
-
-    # Load tmux module
     load_module "$core_dir/tmux.sh" || return 1
-
-    # Load mcsl commands
     load_module "$commands_dir/start.sh" || return 1
     load_module "$commands_dir/stop.sh" || return 1
 
-    # Restart Server
+    # Check required dependencies
+    check_command tmux || return 1
+
+    # Restart server
     if tmux_exists "$session"; then
-        stop_server "$session" "$wait" "restart"
+        stop_server "$session" "$time" "restart"
         tmux_wait "$session"
         sleep 10
     fi
-
-    start_server "$session" $console
+    start_server "$session" "$console"
 }

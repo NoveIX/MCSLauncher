@@ -53,9 +53,10 @@ main() {
 
     local session=""
     local time=""
-    local console=false
+    local console="false"
     local host=""
     local port=""
+    local all="false"
 
     # Parse flags
     while [[ $# -gt 0 ]]; do
@@ -64,22 +65,32 @@ main() {
                 session="$2"
                 shift 2
             ;;
+
             --time|-t)
                 time="$2"
                 shift 2
             ;;
+
             --console|-c)
-                console=true
+                console="true"
                 shift
             ;;
+
             --host|-h)
                 host="$2"
                 shift 2
             ;;
+
             --port|-p)
                 port="$2"
                 shift 2
             ;;
+
+            --all|-a)
+                all="true"
+                shift
+            ;;
+
             *)
                 log_error "unknown argument: $1" "print"
                 return 1
@@ -115,7 +126,7 @@ main() {
         # Start command. Starts the server.
         start)
             load_module "$commands_dir/start.sh"
-            start_server "$session" $console
+            start_server "$session" "$console"
         ;;
 
         # Stop command. Stops the server with an optional delay before stopping.
@@ -127,7 +138,7 @@ main() {
         # Restart command. Stops and then starts the server with a optional delay before stopping.
         restart)
             load_module "$commands_dir/restart.sh"
-            restart_server "$session" "$time" $console
+            restart_server "$session" "$time" "$console"
         ;;
 
         # Console command. Attaches to the tmux session of the server.
@@ -139,7 +150,7 @@ main() {
         # Status command. Prints the status of the server.
         status)
             load_module "$commands_dir/status.sh"
-            status_server "$host" "$port" "$session"
+            status_server "$host" "$port" "$session" "$all"
         ;;
 
         # SelfUpdate command. Updates the mcsl script itself.

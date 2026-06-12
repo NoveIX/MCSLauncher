@@ -14,7 +14,7 @@ declare -A LOADED_MODULES
 load_module() {
     local module="$1"
 
-    # Check mandatory parameter
+    # Check mandatory parameters
     if [[ -z $module ]]; then
         printf -- "load_module: missing required parameter: module\n" >&2
         return 1

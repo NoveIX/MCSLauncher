@@ -6,7 +6,7 @@
 # ================================[ Command ]================================= #
 
 get_version() {
-    # Check mandatory parameter
+    # Check mandatory parameters
 
     if [[ -z "$version_file" ]]; then
         log_error "get_version: missing version file" "print"
