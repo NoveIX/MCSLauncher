@@ -30,7 +30,7 @@ selfupdate() {
                 log_info "mcsl update completed successfully" "print"
                 print_version
             else
-                log_info "no changes were applied" "print"
+                log_info "mcsl is already running the latest version" "print"
             fi
         fi
     else
