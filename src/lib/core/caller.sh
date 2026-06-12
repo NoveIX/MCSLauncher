@@ -34,7 +34,7 @@ call_mcsl() {
         return 1
     fi
 
-    log_info "Executing $cmd in session $session" "$print"
+    log_info "executing command $cmd in session $session" "$print"
 
     # Call mcsl with all remaining args
     if ! bash "$mcslsh" "$cmd" "$@"; then

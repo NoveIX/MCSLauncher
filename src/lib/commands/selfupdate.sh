@@ -7,7 +7,7 @@
 
 selfupdate() {
     local session="$1"
-    local all="$1"
+    local all="$2"
 
     # Check mandatory parameters
     if [[ -z "$session" ]]; then
