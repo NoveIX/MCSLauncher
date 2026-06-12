@@ -10,13 +10,13 @@ get_port() {
 
     # Check mandatory parameters
     if [[ -z "$file" ]]; then
-        log_error "get_port: missing required parameter: file" "print"
+        log_error "get_port: missing required parameter: file" "print" "err"
         return 1
     fi
 
     # Check server.properties exists
     if [[ ! -f "$file" ]]; then
-        log_error "get_port: file not found: $file" "print"
+        log_error "get_port: file not found: $file" "print" "err"
         return 1
     fi
 
@@ -25,7 +25,7 @@ get_port() {
 
     # Check if the port value was found
     if [[ -z "$port" ]]; then
-        log_error "get_port: server-port not found in $file" "print"
+        log_error "get_port: server-port not found in $file" "print" "err"
         return 1
     fi
 

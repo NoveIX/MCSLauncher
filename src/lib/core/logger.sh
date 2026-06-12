@@ -69,7 +69,7 @@ log() {
     local message="$2"
     local print="${3:-$global_print}"
     local path="${4:-$global_logfile}"
-    local out_mode="${5:-both}"
+    local out_mode="${5:-out}"
 
     # log level check
     should_log "$level" || return 0
