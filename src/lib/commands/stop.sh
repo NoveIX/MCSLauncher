@@ -9,6 +9,7 @@ stop_server() {
     local session="$1"
     local time="${2:-0}"
     local mode="${3:-shutdown}"
+    local all="$4"
 
     # Check mandatory parameters
     if [[ -z "$session" ]]; then
@@ -26,22 +27,38 @@ stop_server() {
         return 1
     fi
 
-    # Remote session delegation
+    if [[ -z "$all" ]]; then
+        log_error "stop_server: missing required parameter: all" "print"
+        return 1
+    fi
+
+    # Remote session delegation - ALL MODE (priority)
+    if [[ "${all,,}" == "true" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        for dir in "$server_container"/*/; do
+            [[ -d "$dir" ]] || continue
+
+            session="${dir%/}"
+            session="${session##*/}"
+
+            call_mcsl "$session" stop --time "$time" || true
+        done
+
+        return 0
+    fi
+
+    # Remote session delegation - SINGLE SESSION
     if [[ "$session" != "$session_name" ]]; then
         load_module "$core_dir/caller.sh"
 
-        local args=()
-
-        # Only pass the --console flag if console is set to true (case-insensitive)
-        if [[ "${console,,}" == "true" ]]; then
-            args+=(--console)
-        fi
-
         # Call command in the specified session
-        if call_mcsl "$session" stop --time "$time" "${args[@]}"; then
-            return 0
-        fi
+        call_mcsl "$session" stop --time "$time" || true
+
+        return 0
     fi
+
+    # STOP COMMAND EXECUTION
 
     # Load required modules
     load_module "$core_dir/command.sh" || return 1

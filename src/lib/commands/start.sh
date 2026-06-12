@@ -8,6 +8,7 @@
 start_server() {
     local session="$1"
     local console="$2"
+    local all="$3"
 
     # Check mandatory parameters
     if [[ -z "$session" ]]; then
@@ -20,22 +21,48 @@ start_server() {
         return 1
     fi
 
-    # Remote session delegation
+    if [[ -z "$all" ]]; then
+        log_error "start_server: missing required parameter: all" "print"
+        return 1
+    fi
+
+    # Remote server delegation - ALL MODE (priority)
+    if [[ "${all,,}" == "true" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        local args=()
+
+        # Only pass the --console flag if console is set to true (case-insensitive)
+        [[ "${console,,}" == "true" ]] && args+=(--console)
+
+        for dir in "$server_container"/*/; do
+            [[ -d "$dir" ]] || continue
+
+            session="${dir%/}"
+            session="${session##*/}"
+
+            call_mcsl "$session" start "${args[@]}" || true
+        done
+
+        return 0
+    fi
+
+    # Remote server delegation - SINGLE SESSION
     if [[ "$session" != "$session_name" ]]; then
         load_module "$core_dir/caller.sh"
 
         local args=()
 
         # Only pass the --console flag if console is set to true (case-insensitive)
-        if [[ "${console,,}" == "true" ]]; then
-            args+=(--console)
-        fi
+        [[ "${console,,}" == "true" ]] && args+=(--console)
 
         # Call command in the specified session
-        if call_mcsl "$session" start "${args[@]}"; then
-            return 0
-        fi
+        call_mcsl "$session" start "${args[@]}" || true
+
+        return 0
     fi
+
+    # START COMMAND EXECUTION
 
     # Load required modules
     load_module "$core_dir/command.sh" || return 1

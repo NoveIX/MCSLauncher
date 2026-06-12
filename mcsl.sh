@@ -126,19 +126,19 @@ main() {
         # Start command. Starts the server.
         start)
             load_module "$commands_dir/start.sh"
-            start_server "$session" "$console"
+            start_server "$session" "$console" "$all"
         ;;
 
         # Stop command. Stops the server with an optional delay before stopping.
         stop)
             load_module "$commands_dir/stop.sh"
-            stop_server "$session" "$time" "shutdown"
+            stop_server "$session" "$time" "shutdown" "$all"
         ;;
 
         # Restart command. Stops and then starts the server with a optional delay before stopping.
         restart)
             load_module "$commands_dir/restart.sh"
-            restart_server "$session" "$time" "$console"
+            restart_server "$session" "$time" "$console" "$all"
         ;;
 
         # Console command. Attaches to the tmux session of the server.
@@ -150,13 +150,13 @@ main() {
         # Status command. Prints the status of the server.
         status)
             load_module "$commands_dir/status.sh"
-            status_server "$host" "$port" "$session" "$all"
+            status_server "$session" "$host" "$port" "$all"
         ;;
 
         # SelfUpdate command. Updates the mcsl script itself.
         selfupdate)
             load_module "$commands_dir/selfupdate.sh"
-            selfupdate
+            selfupdate "$session" "$all"
         ;;
 
         # Default case. Prints the help message for mcsl.

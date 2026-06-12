@@ -6,14 +6,56 @@
 # ================================[ Command ]================================= #
 
 selfupdate() {
-    # Load command module
-    load_module "$core_dir/command.sh" || return 1
+    local session="$1"
+    local all="$1"
 
-    # Check required command
+    # Check mandatory parameters
+    if [[ -z "$session" ]]; then
+        log_error "selfupdate: missing required parameter: session" "print"
+        return 1
+    fi
+
+    if [[ -z "$all" ]]; then
+        log_error "selfupdate: missing required parameter: all" "print"
+        return 1
+    fi
+
+    # Remote session delegation - ALL MODE (priority)
+    if [[ "${all,,}" == "true" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        for dir in "$server_container"/*/; do
+            [[ -d "$dir" ]] || continue
+
+            session="${dir%/}"
+            session="${session##*/}"
+
+            call_mcsl "$session" selfupdate || true
+        done
+
+        return 0
+    fi
+
+    # Remote session delegation - SINGLE SESSION
+    if [[ "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh"
+
+        # Call command in the specified session
+        call_mcsl "$session" selfupdate || true
+
+        return 0
+    fi
+
+    # SELFUPDATE COMMAND EXECUTION
+
+    # Load required modules
+    load_module "$core_dir/command.sh" || return 1
+    load_module "$commands_dir/version.sh" || return 1
+
+    # Check required dependencies
     check_command "git" || return 1
 
-    # Load mcsl commands
-    load_module "$commands_dir/version.sh" || return 1
+    # Get mcsl current version
     local old_version=$(get_version)
 
     # restore mcsl dir
