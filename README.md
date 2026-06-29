@@ -54,7 +54,7 @@ For 'start' command:
   └→ Spawns mcslctl.sh inside
        ↓
     mcslctl.sh (runtime loop)
-       ├→ Reads config (cfg/mcsl-behavior.ini)
+       ├→ Reads config (`cfg/mcslctl.conf` and `cfg/mcslctl-notify.conf`)
        ├→ Executes StartCommand (run.sh or custom script)
        ├→ Monitors server process
        ├→ Auto-restarts on crash (if enabled)
@@ -122,6 +122,8 @@ minecraft-server/              ← Server root
 cd ~/minecraft-server/mcsl
 ./mcsl.sh start
 ```
+
+If this is the first time you run `start`, MCSL will generate default config files in `cfg/` and exit. Edit `cfg/mcslctl.conf` or `cfg/mcslctl-notify.conf` if needed, then run `./mcsl.sh start` again.
 
 That's it! Your server is now running in a `tmux` session.
 
@@ -197,7 +199,7 @@ cd ~/minecraft-server/mcsl
 | `restart` | `-t`, `--time` | Restart the server (stop + start) |
 | `console` | `-c`, `--console` | Attach to the server console |
 | `status` | `--host`, `-h`, `--port`, `-p` | Check if server is online (use `--host`/`--port` for remote checks) |
-| `migrate` | `-d`, `--dest` | Migrate or copy the server to a new location (local or remote) |
+| `migrate` | `-d`, `--dest` | Move the server to a new location (local or remote) |
 | `kill` | `--confirm-action` | Forcefully kill a server tmux session (destructive; requires confirmation) |
 | `selfupdate` | | Update MCSL from Git |
 
@@ -281,7 +283,7 @@ Once attached to the server console (via `start --console` or `console` command)
 ## ⚙️ Configuration
 
 The runtime controller is `src/script/mcslctl.sh`.
-It loads configuration from `cfg/mcsl-behavior.ini` and generates a default config if missing.
+It loads configuration from `cfg/mcslctl.conf` and `cfg/mcslctl-notify.conf`, generating both files if missing on first start.
 
 Default config values:
 
@@ -289,11 +291,13 @@ Default config values:
 StartCommand=run.sh
 CrashHandle=true
 MaxRestart=3
+LogMode=separate
 ```
 
 - `StartCommand` — startup script or command used to launch the Minecraft server
 - `CrashHandle` — `true` to restart automatically after a crash; `false` to stop instead
 - `MaxRestart` — maximum crash restart attempts before stopping (use `-1` for unlimited retries)
+- `LogMode` — `separate` for split logs, `combined` to write all messages into a single log.
 
 ---
 
@@ -303,7 +307,7 @@ MaxRestart=3
 
 1. Creates a `tmux` session (named after your server directory)
 2. Spawns `mcslctl.sh` inside the session
-3. `mcslctl.sh` reads `cfg/mcsl-behavior.ini` configuration
+3. `mcslctl.sh` reads `cfg/mcslctl.conf` (and `cfg/mcslctl-notify.conf`)
 4. Executes the `StartCommand` (default: `run.sh`)
 5. Monitors the process continuously:
    - If it crashes, auto-restarts (based on `CrashHandle` setting)
@@ -416,7 +420,7 @@ If not running, start it first:
 
 ### Server keeps restarting
 
-Check your crash handling settings in `cfg/mcsl-behavior.ini`:
+Check your crash handling settings in `cfg/mcslctl.conf`:
 ```ini
 CrashHandle=false    # Disable auto-restart
 ```

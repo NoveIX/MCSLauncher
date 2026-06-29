@@ -67,9 +67,11 @@ start_server() {
         # Generate default configuration file
         log_info "generating default configuration" "print"
         default_config "$cfg_dir/mcslctl.conf"
+        default_notify_config "$cfg_dir/mcslctl-notify.conf"
 
         # Log message to inform the user about the generated configuration file
         log_info "edit '$cfg_dir/mcslctl.conf' to configure mcslctl behavior" "print"
+        log_info "edit '$cfg_dir/mcslctl-notify.conf' to configure mcslctl notification" "print"
         return 0
     fi
 
@@ -107,6 +109,6 @@ start_server() {
         return 0
     fi
 
-    log_info "Server $session is running" "print"
+    log_info "server $session is running" "print"
     return 0
 }

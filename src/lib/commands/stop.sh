@@ -83,6 +83,6 @@ stop_server() {
         return 0
     fi
 
-    log_info "Server $session is not running" "print"
+    log_info "server $session is not running" "print"
     return 0
 }

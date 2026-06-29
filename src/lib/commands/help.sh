@@ -28,11 +28,11 @@ Commands:
   console, -c, --console  Attach to the server tmux console.
   status                  Display the server status (host/port tcp/ip checks).
   selfupdate              Update MCSL from the Git repository.
-  migrate                 Move or copy the server to a new location (local or remote).
-  kill                    Forcefully kill a server tmux session (destructive).
+  migrate                 Move the server to a new location (local or remote).
+  kill                    Forcefully terminate a server tmux session (destructive action).
 
 Options:
-  -s, --session <name>    Name of the tmux session to use (default: derived from server root).
+  -s, --session <name>    Name of the tmux session to target (default: derived from server root).
   -t, --time <seconds>    Delay in seconds for stop/restart/migrate operations.
   -c, --console           Attach to the tmux session after starting or restarting.
   -h, --host <host>       Host to query for status (default: localhost).
@@ -43,6 +43,8 @@ Options:
   -a, --all               Apply the command to all servers in the parent container directory.
   --confirm-action        Required for destructive actions like kill to proceed.
 
+Note: `-h` is recognized as a top-level alias for `help`. After a command, `-h` is also used as the short form of `--host` for `status`.
+
 Examples:
   ./mcsl.sh start
   ./mcsl.sh start --console
@@ -52,7 +54,7 @@ Examples:
   ./mcsl.sh status
   ./mcsl.sh status --host mc.example.com --port 25000
   ./mcsl.sh migrate -d /new/path --time 60
-  ./mcsl.sh migrate user@host:/new/path
+  ./mcsl.sh migrate -d user@host:/new/path
   ./mcsl.sh migrate --dest /new/path --host host --user user --key key
   ./mcsl.sh kill --confirm-action
   ./mcsl.sh selfupdate

@@ -14,26 +14,60 @@ default_config() {
 
     # Create and write default config
     cat <<"EOF" > "$file"
-# Minecraft Server Launcher Controller Config
+# Minecraft Server Launcher Controller Configuration
 
-# Server startup file provided by the JAR installer or custom script
-# In case of relative path, it will be resolved against the server directory
-# Support commands like "java -jar server.jar" or "./start.sh"
+# Command used to start the Minecraft server.
+# The command is executed from the server root directory.
+# Supports relative or absolute paths, as well as commands with arguments.
+# Examples:
+#   StartCommand=java -jar server.jar nogui
+#   StartCommand=run.sh
 StartCommand=run.sh
 
-# Automatic restart in case of crash
-# Set to true to enable automatic restart, false to disable
+# Automatically restart the server if it crashes.
+# Valid values: true, false
+# Default: true
 CrashHandle=true
 
-# Number of restart attempts before stopping to avoid infinite loop
-# Set to a positive integer to limit the number of restarts
-# Set to -1 for unlimited retries
+# Maximum number of restart attempts before giving up.
+# Use a positive integer to limit retries.
+# Use -1 for unlimited restart attempts.
+# Default: 3
 MaxRestart=3
 
-# Default log mode for mcslctl. Options: "separate" (default), "combined"
-# "separate" mode creates additional log files for warnings, errors, and fatal messages.
-# "combined" mode logs all messages into a single log file.
+# Default log mode used by mcslctl.
+# Valid values:
+#   separate - Creates dedicated log files for warnings, errors, and fatal messages.
+#   combined - Writes all log messages to a single file.
+# Default: separate
 LogMode=separate
+EOF
+}
+
+default_notify_config() {
+    local file="$1"
+
+    # Check mandatory parameters
+    require_param "file" "$file" "default_notify_config" || return 1
+
+    # Create and write default config
+    cat <<"EOF" > "$file"
+# Minecraft Server Launcher Notification Configuration
+
+# Enable or disable notifications for server events.
+EnableNotification=false
+
+# Name of the server shown in notifications
+ServerName=My Minecraft Server
+
+# Discord webhook URL for server events
+DiscordWebHook=https://discord.com/api/webhooks/HooksId
+
+# Telegram bot token
+TelegramToken=TokenId
+
+# Telegram chat ID (can be negative for groups)
+TelegramChatID=ChatId
 EOF
 }
 
@@ -120,12 +154,100 @@ read_config() {
         log_warn "invalid LogMode value $LogMode (expected separate|combined)" "print"
     fi
 
-    if [[ "$valid" != true ]]; then
+    if [[ "${valid,,}" != "true" ]]; then
         log_error "configuration validation failed" "print"
         return 1
     fi
 
     # Result
     log_info "configuration loaded successfully"
+    return 0
+}
+
+read_notify_config() {
+    local file="$1"
+    local key value
+    local valid=true
+
+    # Check mandatory parameters
+    require_param "file" "$file" "read_notify_config" || return 1
+
+    # Ensure cfg dir
+    if [[ ! -d "$cfg_dir" ]]; then
+        mkdir -p "$cfg_dir"
+    fi
+
+    # Check if config file exists
+    if [[ ! -f "$file" ]]; then
+        log_info "generating default notify configuration" "print"
+        default_notify_config "$file"
+    fi
+
+    # Check if config file is readable
+    while IFS='=' read -r key value; do
+        key="$(trim "$key")"
+        value="$(trim "$value")"
+
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" == \#* ]] && continue
+
+        case "$key" in
+            EnableNotification)
+                EnableNotification="$value"
+            ;;
+
+            ServerName)
+                ServerName="$value"
+            ;;
+
+            DiscordWebHook)
+                DiscordWebHook="$value"
+            ;;
+
+            TelegramToken)
+                TelegramToken="$value"
+            ;;
+
+            TelegramChatID)
+                TelegramChatID="$value"
+            ;;
+
+            *)
+                log_error "unknown config key: $key"
+                valid=false
+            ;;
+        esac
+    done < "$file"
+
+    #    # Validation (notify-specific)
+
+    if [[ ! "$EnableNotification" =~ ^(true|false)$ ]]; then
+        log_error "invalid EnableNotification value $EnableNotification (expected true|false)" "print"
+        valid=false
+    fi
+
+    if [[ "${EnableNotification,,}" == "true" ]]; then
+
+        if [[ -z "$ServerName" ]]; then
+            log_warn "ServerName is empty"
+        fi
+
+        if [[ -z "$DiscordWebHook" ]]; then
+            log_warn "DiscordWebHook is empty (Discord notifications disabled)"
+        fi
+
+        if [[ -z "$TelegramToken" || -z "$TelegramChatID" ]]; then
+            log_warn "Telegram is not fully configured (missing token or chat ID)"
+        fi
+
+    fi
+
+    if [[ "${valid,,}" != "true" ]]; then
+        log_error "configuration validation failed" "print"
+        return 1
+    fi
+
+    # Result
+    log_info "notify configuration loaded successfully"
     return 0
 }

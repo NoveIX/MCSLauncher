@@ -31,25 +31,34 @@ migrate_server() {
 migrate_local() {
     local dest="$1"
     local time="$2"
+    local red="\033[31m"
+    local green="\033[32m"
+    local reset="\033[0m"
+    local dot="${red}●${reset}"
     local answer
 
     # Load required modules
     load_module "$core_dir/command.sh" || return 1
+    load_module "$core_dir/tmux.sh" || return 1
     load_module "$commands_dir/stop.sh" || return 1
 
     # Check required dependencies
+    check_command "tmux" || return 1
     check_command "rsync" || return 1
 
-    # separate dest and host if dest contains ':'
-    [[ "$dest" == *:* ]] && dest="${dest#*:}"
+    # Trim trailing slash from destination path
+    dest="${dest%/}"
 
     # Log migration info
     printf '\n'
     log_info "local move: $dest/" "print"
     printf '\n'
 
+    # Check if session exist
+    exists_tmux "$session_name" && dot="${green}●${reset}"
+
     # Check if user wants to continue
-    printf '%b●%b ' "\033[32m" "\033[0m"
+    printf '%b ' "$dot"
     read -r -p "Server will be stopped if running. Proceed with migration? [y/N]: " answer
     if [[ "${answer,,}" != "y" ]]; then
         log_info "migration aborted by user" "print"
@@ -64,7 +73,6 @@ migrate_local() {
     log_setting
 
     # Ensure directory
-    dest="${dest%/}"
     if ! mkdir -p "$dest"; then
         log_error "failed to create directory: $dest" "print"
         return 1
@@ -117,13 +125,20 @@ migrate_remote() {
     local key="$4"
     local port="$5"
     local time="$6"
+    local red="\033[31m"
+    local green="\033[32m"
+    local reset="\033[0m"
+    local dot="${red}●${reset}"
+    local answer
 
     # Load required modules
     load_module "$core_dir/command.sh" || return 1
+    load_module "$core_dir/tmux.sh" || return 1
     load_module "$core_dir/remote.sh" || return 1
     load_module "$commands_dir/stop.sh" || return 1
 
     # Check required dependencies
+    check_command "tmux" || return 1
     check_command "ssh" || return 1
     check_command "rsync" || return 1
 
@@ -132,6 +147,9 @@ migrate_remote() {
         host="${dest%%:*}"
         dest="${dest#*:}"
     fi
+
+    # Trim trailing slash from destination path
+    dest="${dest%/}"
 
     # separate user and host if host contains '@'
     if [[ "$host" == *@* ]]; then
@@ -161,8 +179,11 @@ migrate_remote() {
     log_info "destination: $login:$dest/" "print"
     printf '\n'
 
+    # Check if session exist
+    exists_tmux "$session_name" && dot="${green}●${reset}"
+
     # Check if user wants to continue
-    printf '%b●%b ' "\033[32m" "\033[0m"
+    printf '%b ' "$dot"
     read -r -p "Server will be stopped if running. Proceed with migration? [y/N]: " answer
     if [[ "${answer,,}" != "y" ]]; then
         log_info "migration aborted by user" "print"
@@ -177,7 +198,6 @@ migrate_remote() {
     log_setting
 
     # Ensure directory
-    dest="${dest%/}"
     if ! call_ssh "$host" "$user" "$key" "$port" mkdir -p "$dest"; then
         log_error "failed to create remote directory: $login:$dest/" "print"
         return 1
