@@ -36,7 +36,7 @@ start_server() {
     # START COMMAND EXECUTION
 
     # Genereting default config
-    if [[ ! -f "$cfg_dir/mcslctl.conf" ]]; then
+    if [[ ! -f "$cfg_dir/mcsl-runtime.conf" ]]; then
         # Load required modules
         load_module "$core_dir/config.sh" || return 1
 
@@ -44,12 +44,14 @@ start_server() {
 
         # Generate default configuration file
         log_info "generating default configuration" "print"
-        default_config "$cfg_dir/mcslctl.conf"
-        default_config_notify "$cfg_dir/mcslctl-notify.conf"
+        default_config_runtime "$cfg_dir/mcsl-runtime.conf"
+        default_config_backup "$cfg_dir/mcsl-backup.conf"
+        default_config_notify "$cfg_dir/mcsl-notify.conf"
 
         # Log message to inform the user about the generated configuration file
-        log_info "edit '$cfg_dir/mcslctl.conf' to configure mcslctl behavior" "print"
-        log_info "edit '$cfg_dir/mcslctl-notify.conf' to configure mcslctl notification" "print"
+        log_info "edit '$cfg_dir/mcsl-runtime.conf' to configure mcsl runtime" "print"
+        log_info "edit '$cfg_dir/mcsl-backup.conf' to configure mcsl backup" "print"
+        log_info "edit '$cfg_dir/mcsl-notify.conf' to configure mcsl notification" "print"
         return 0
     fi
 
@@ -67,9 +69,10 @@ start_server() {
     # Check if the tmux session already exists
     # If it does, log a warning and return with a specific code
     if ! exists_tmux "$session"; then
-        # Read mcslctl config behavior
-        log_info "read mcslctl config"
-        read_config "$cfg_dir/mcslctl.conf" || return 1
+        # Read mcsl config
+        log_info "read mcsl-runtime config"
+        read_config_runtime "$cfg_dir/mcsl-runtime.conf" || return 1
+        read_config_backup "$cfg_dir/mcsl-backup.conf" || return 1
 
         # Read EULA to ensure it exists before starting the server
         read_eula "$server_root/eula.txt" || return 1
@@ -77,16 +80,28 @@ start_server() {
         # ensure restart/keep-alive flag exists
         write_restartctl "$restartctl" || return 1
 
-        # Create a new detached tmux session that runs the mcslctl script
-        log_info "starting server $session at $(date "+%F %T")" "print"
-        tmux new-session -d -s "$session" -n "mcslctl" \
-        bash "$mcslctl" "$mcsl_dir" "$LogMode"
+        # Create a new detached tmux session that runs the mcsl script
+        if tmux new-session -d -s "$session" -n "mcsl-runtime" \
+        bash "$mcsl_runtime" "$mcsl_dir" "$LOG_MODE"; then
+            log_info "starting server $session at $(date "+%F %T")"
+            print "starting server $session"
+        fi
+
+        # Create a new detached tmux window for backup operations
+        if [[ "$ENABLE_BACKUP" == "true" ]]; then
+            if tmux new-window -t "$session" -n "mcsl-backup" \
+            bash "$mcsl_backup" "$mcsl_dir" "$session" "$LOG_MODE"; then
+                log_info "starting backup scheduler for server $session"
+                print "starting backup scheduler for server $session"
+            fi
+        fi
 
         # Connect to tmux session
-        [[ ${console,,} == "true" ]] && attach_tmux "$session"
+        [[ ${console,,} == "true" ]] && attach_tmux "${session}:0"
         return 0
     fi
 
-    log_info "server $session is running" "print"
+    log_info "server $session is running"
+    print "server $session is running"
     return 0
 }

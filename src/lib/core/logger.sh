@@ -163,3 +163,7 @@ log_done() {
     # Green DONE log level.
     log "DONE" "${1:-}" "${2:-}" "${3:-}"
 }
+
+print() {
+    printf '%b\n' "${1:-}"
+}

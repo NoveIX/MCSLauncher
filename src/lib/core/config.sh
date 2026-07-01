@@ -5,16 +5,26 @@
 
 # ================================[ Function ]================================ #
 
+# Trim leading and trailing whitespace from a string.
+trim() {
+    local s="$1"
+
+    s="${s#"${s%%[![:space:]]*}"}"
+    s="${s%"${s##*[![:space:]]}"}"
+
+    printf '%s\n' "$s"
+}
+
 # Generate a default configuration file with example settings.
-default_config() {
+default_config_runtime() {
     local file="$1"
 
     # Check mandatory parameters
-    require_param "file" "$file" "default_config" || return 1
+    require_param "file" "$file" "default_config_runtime" || return 1
 
     # Create and write default config
     cat <<"EOF" > "$file"
-# Minecraft Server Launcher Controller Configuration
+# Minecraft Server Launcher Runtime Configuration
 
 # Command used to start the Minecraft server.
 # The command is executed from the server root directory.
@@ -35,13 +45,74 @@ CrashHandle=true
 # Default: 3
 MaxRestart=3
 
-# Default log mode used by mcslctl.
+# Default log mode used by mcsl-runtime.
 # Valid values:
 #   separate - Creates dedicated log files for warnings, errors, and fatal messages.
 #   combined - Writes all log messages to a single file.
 # Default: separate
 LogMode=separate
 EOF
+}
+
+# Read configuration from a file and set global variables accordingly. Validates required parameters and applies defaults for optional ones.
+read_config_runtime() {
+    local file="$1"
+    local key value
+    local valid=true
+
+    # Check mandatory parameters
+    require_param "file" "$file" "read_config_runtime" || return 1
+
+    # Ensure cfg dir
+    [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
+
+    # Check if config file exists
+    if [[ ! -f "$file" ]]; then
+        log_info "generating default configuration" "print"
+        default_config_runtime "$file"
+    fi
+
+    # Check if config file is readable
+    while IFS='=' read -r key value; do
+        key="$(trim "$key")"
+        value="$(trim "$value")"
+
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" == \#* ]] && continue
+
+        case "$key" in
+            StartCommand) START_COMMAND="$value" ;;
+            CrashHandle)  CRASH_HANDLE="${value,,}"  ;;
+            MaxRestart)   MAX_RESTART="$value"   ;;
+            LogMode)      LOG_MODE="${value,,}"      ;;
+            *)
+                log_error "unknown config key: $key"
+                valid=false
+            ;;
+        esac
+    done < "$file"
+
+    # Required parameters
+    require_param "StartCommand" "$START_COMMAND" "read_config_runtime" || return 1
+
+    # Optional defaults
+    CRASH_HANDLE="${CRASH_HANDLE:-true}"
+    MAX_RESTART="${MAX_RESTART:-3}"
+    LOG_MODE="${LOG_MODE:-separate}"
+
+    # Validation
+    [[ ! "$CRASH_HANDLE" =~ ^(true|false)$ ]] && log_warn "invalid CrashHandle value $CRASH_HANDLE (expected true|false)" "print"
+    [[ ! "$MAX_RESTART" =~ ^(-1|[0-9]+)$ ]] && log_warn "invalid MaxRestart value $MAX_RESTART (expected integer or -1)" "print"
+    [[ ! "$LOG_MODE" =~ ^(separate|combined)$ ]] && log_warn "invalid LogMode value $LOG_MODE (expected separate|combined)" "print"
+
+    if [[ "${valid,,}" != "true" ]]; then
+        log_error "runtime configuration validation failed" "print"
+        return 1
+    fi
+
+    # Result
+    log_info "runtime configuration loaded successfully"
+    return 0
 }
 
 default_config_notify() {
@@ -71,99 +142,6 @@ TelegramChatID=ChatId
 EOF
 }
 
-# Trim leading and trailing whitespace from a string.
-trim() {
-    local s="$1"
-
-    s="${s#"${s%%[![:space:]]*}"}"
-    s="${s%"${s##*[![:space:]]}"}"
-
-    printf '%s\n' "$s"
-}
-
-# Read configuration from a file and set global variables accordingly. Validates required parameters and applies defaults for optional ones.
-read_config() {
-    local file="$1"
-    local key value
-    local valid=true
-
-    # Check mandatory parameters
-    require_param "file" "$file" "read_config" || return 1
-
-    # Ensure cfg dir
-    if [[ ! -d "$cfg_dir" ]]; then
-        mkdir -p "$cfg_dir"
-    fi
-
-    # Check if config file exists
-    if [[ ! -f "$file" ]]; then
-        log_info "generating default configuration" "print"
-        default_config "$file"
-    fi
-
-    # Check if config file is readable
-    while IFS='=' read -r key value; do
-        key="$(trim "$key")"
-        value="$(trim "$value")"
-
-        # Skip empty lines and comments
-        [[ -z "$key" || "$key" == \#* ]] && continue
-
-        case "$key" in
-            StartCommand)
-                StartCommand="$value"
-            ;;
-
-            CrashHandle)
-                CrashHandle="$value"
-            ;;
-
-            MaxRestart)
-                MaxRestart="$value"
-            ;;
-
-            LogMode)
-                LogMode="$value"
-            ;;
-
-            *)
-                log_error "unknown config key: $key"
-                valid=false
-            ;;
-        esac
-    done < "$file"
-
-    # Required parameters
-    require_param "StartCommand" "$StartCommand" "read_config" || return 1
-
-    # Optional defaults
-    CrashHandle="${CrashHandle:-true}"
-    MaxRestart="${MaxRestart:-3}"
-    LogMode="${LogMode:-separate}"
-
-    # Validation
-    if [[ ! "${CrashHandle,,}" =~ ^(true|false)$ ]]; then
-        log_warn "invalid CrashHandle value $CrashHandle (expected true|false)" "print"
-    fi
-
-    if [[ ! "$MaxRestart" =~ ^(-1|[0-9]+)$ ]]; then
-        log_warn "invalid MaxRestart value $MaxRestart (expected integer or -1)" "print"
-    fi
-
-    if [[ ! "$LogMode" =~ ^(separate|combined)$ ]]; then
-        log_warn "invalid LogMode value $LogMode (expected separate|combined)" "print"
-    fi
-
-    if [[ "${valid,,}" != "true" ]]; then
-        log_error "configuration validation failed" "print"
-        return 1
-    fi
-
-    # Result
-    log_info "configuration loaded successfully"
-    return 0
-}
-
 read_config_notify() {
     local file="$1"
     local key value
@@ -173,9 +151,7 @@ read_config_notify() {
     require_param "file" "$file" "read_config_notify" || return 1
 
     # Ensure cfg dir
-    if [[ ! -d "$cfg_dir" ]]; then
-        mkdir -p "$cfg_dir"
-    fi
+    [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
 
     # Check if config file exists
     if [[ ! -f "$file" ]]; then
@@ -192,26 +168,11 @@ read_config_notify() {
         [[ -z "$key" || "$key" == \#* ]] && continue
 
         case "$key" in
-            EnableNotification)
-                EnableNotification="$value"
-            ;;
-
-            ServerName)
-                ServerName="$value"
-            ;;
-
-            DiscordWebHook)
-                DiscordWebHook="$value"
-            ;;
-
-            TelegramToken)
-                TelegramToken="$value"
-            ;;
-
-            TelegramChatID)
-                TelegramChatID="$value"
-            ;;
-
+            EnableNotification) ENABLE_NOTIFICATION="${value,,}" ;;
+            ServerName)         SERVER_NAME="$value"         ;;
+            DiscordWebHook)     DISCORD_WEBHOOK="$value"     ;;
+            TelegramToken)      TELEGRAM_TOKEN="$value"      ;;
+            TelegramChatID)     TELEGRAM_CHATID="$value"     ;;
             *)
                 log_error "unknown config key: $key"
                 valid=false
@@ -220,34 +181,110 @@ read_config_notify() {
     done < "$file"
 
     #    # Validation (notify-specific)
-
-    if [[ ! "$EnableNotification" =~ ^(true|false)$ ]]; then
-        log_error "invalid EnableNotification value $EnableNotification (expected true|false)" "print"
+    if [[ ! "$ENABLE_NOTIFICATION" =~ ^(true|false)$ ]]; then
+        log_error "invalid EnableNotification value $ENABLE_NOTIFICATION (expected true|false)" "print"
         valid=false
     fi
 
-    if [[ "${EnableNotification,,}" == "true" ]]; then
-
-        if [[ -z "$ServerName" ]]; then
-            log_warn "ServerName is empty"
-        fi
-
-        if [[ -z "$DiscordWebHook" ]]; then
-            log_warn "DiscordWebHook is empty (Discord notifications disabled)"
-        fi
-
-        if [[ -z "$TelegramToken" || -z "$TelegramChatID" ]]; then
-            log_warn "Telegram is not fully configured (missing token or chat ID)"
-        fi
-
+    if [[ "$ENABLE_NOTIFICATION" == "true" ]]; then
+        [[ -z "$SERVER_NAME" ]] && log_warn "ServerName is empty" "print"
+        [[ -z "$DISCORD_WEBHOOK" ]] && log_warn "DiscordWebHook is empty (Discord notifications disabled)" "print"
+        [[ -z "$TELEGRAM_TOKEN" || -z "$TELEGRAM_CHATID" ]] && log_warn "Telegram is not fully configured (missing token or chat ID)" "print"
     fi
 
-    if [[ "${valid,,}" != "true" ]]; then
-        log_error "configuration validation failed" "print"
+    if [[ "$valid" != "true" ]]; then
+        log_error "notify configuration validation failed" "print"
         return 1
     fi
 
     # Result
     log_info "notify configuration loaded successfully"
+    return 0
+}
+
+default_config_backup() {
+    local file="$1"
+
+    # Check mandatory parameters
+    require_param "file" "$file" "default_config_backup" || return 1
+
+    # Create and write default config
+    cat <<"EOF" > "$file"
+# Minecraft Server Launcher Backup Configuration
+
+# Enable or disable automatic backups for the Minecraft server.
+EnableBackup=false
+
+# Backup archive format
+# Supported: zip, tar.gz, tar.bz2, tar.xz, tar.zst (if available)
+# zip is the default and most widely supported format. Requires zip installed on the system.
+BackupFormat=zip
+
+# Backup delay in minutes.
+BackupDelay=30
+EOF
+}
+
+read_config_backup() {
+    local file="$1"
+    local key value
+    local valid=true
+
+    # Check mandatory parameters
+    require_param "file" "$file" "read_config_backup" || return 1
+
+    # Ensure cfg dir
+    [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
+
+    # Check if config file exists
+    if [[ ! -f "$file" ]]; then
+        log_info "generating default backup configuration" "print"
+        default_config_backup "$file"
+    fi
+
+    # Check if config file is readable
+    while IFS='=' read -r key value; do
+        key="$(trim "$key")"
+        value="$(trim "$value")"
+
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" == \#* ]] && continue
+
+        case "$key" in
+            EnableBackup) ENABLE_BACKUP="${value,,}" ;;
+            BackupFormat) BACKUP_FORMAT="${value,,}" ;;
+            BackupDelay)  BACKUP_DELAY="$value"  ;;
+            *)
+                log_error "unknown config key: $key"
+                valid=false
+            ;;
+        esac
+    done < "$file"
+
+    # Validation
+    if [[ ! "$ENABLE_BACKUP" =~ ^(true|false)$ ]]; then
+        log_error "invalid EnableBackup value $ENABLE_BACKUP (expected true|false)" "print"
+        valid=false
+    fi
+
+    # Optional defaults
+    BACKUP_FORMAT="${BACKUP_FORMAT:-zip}"
+    BACKUP_DELAY="${BACKUP_DELAY:-30}"
+
+    if [[ "$ENABLE_BACKUP" == "true" ]]; then
+        case "$BACKUP_FORMAT" in
+            zip|tar.gz|tar.bz2|tar.xz|tar.zst) ;;
+            *) log_warn "Invalid BackupFormat $BACKUP_FORMAT (expected zip, tar.gz, tar.bz2, tar.xz, or tar.zst)";;
+        esac
+        [[ ! "$BACKUP_DELAY" =~ ^(-1|[0-9]+)$ ]] && log_warn "invalid BackupDelay value $BACKUP_DELAY (expected integer or -1)" "print"
+    fi
+
+    if [[ "$valid" != "true" ]]; then
+        log_error "backup configuration validation failed" "print"
+        return 1
+    fi
+
+    # Result
+    log_info "backup configuration loaded successfully"
     return 0
 }

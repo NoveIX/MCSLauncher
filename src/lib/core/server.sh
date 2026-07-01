@@ -34,7 +34,7 @@ read_eula() {
     value=$(grep -E '^[[:space:]]*eula[[:space:]]*=' "$file" \
         | tail -n 1 \
         | cut -d'=' -f2 \
-        | tr -d '[:space:]')
+    | tr -d '[:space:]')
 
     # Default if missing
     [[ -z "$value" ]] && value="false"
@@ -68,27 +68,31 @@ read_eula() {
     return 0
 }
 
-get_port() {
+get_property() {
     local file="$1"
+    local key="$2"
 
     # Check mandatory parameters
-    require_param "file" "$file" "get_port" "err" || return 1
+    require_param "file" "$file" "get_property" "err" || return 1
+    require_param "key" "$key" "get_property" "err" || return 1
 
     # Check server.properties exists
     if [[ ! -f "$file" ]]; then
-        log_error "get_port: file not found: $file" "print" "err"
+        log_error "get_property: file not found: $file" "print" "err"
         return 1
     fi
 
-    # Extract the server-port value from the server.properties file
-    local port=$(grep -E '^server-port=' "$file" | head -n1 | cut -d'=' -f2)
+    # Extract the key value from file
+    local value
+    value=$(grep -m1 -E "^${key}=" "$file") || true
+    value=${value#*=}
 
-    # Check if the port value was found
-    if [[ -z "$port" ]]; then
-        log_error "get_port: server-port not found in $file" "print" "err"
+    # Check if the value was found
+    if [[ -z "$value" ]]; then
+        log_error "get_property: $key not found in $file" "print" "err"
         return 1
     fi
 
-    # Output the port value
-    printf '%s\n' "$port"
+    # Output the value
+    printf '%s\n' "$value"
 }

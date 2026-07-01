@@ -59,7 +59,7 @@ status_server() {
         exists_tmux "$session_name" && dot="${green}●${reset}"
 
         # Get server port
-        port=$(get_port "$server_root/server.properties") || true
+        port=$(get_property "$server_root/server.properties" "server-port") || true
         address="$session"
 
         # Get server uptime

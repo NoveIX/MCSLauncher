@@ -9,18 +9,26 @@ set -euo pipefail
 
 # ===============================[ Parameter ]================================ #
 
-# Path and name variables
+# Define the directory of the script and its name
 readonly mcsl_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly mcsl_name="$(basename -- "${BASH_SOURCE[0]}")"
-readonly log_dir="$mcsl_dir/logs"
+
+# Source directories
 readonly cfg_dir="$mcsl_dir/cfg"
+readonly logs_dir="$mcsl_dir/logs"
 readonly data_dir="$mcsl_dir/src/data"
 readonly core_dir="$mcsl_dir/src/lib/core"
 readonly commands_dir="$mcsl_dir/src/lib/commands"
-readonly runtime_dir="$mcsl_dir/src/runtime"
-readonly mcslctl="$mcsl_dir/src/script/mcslctl.sh"
-readonly uptimectl="$runtime_dir/uptimectl"
+
+# Runtime directory and script
+readonly runtime_dir="$mcsl_dir/runtime"
+readonly mcsl_runtime="$mcsl_dir/src/script/mcsl-runtime.sh"
+readonly mcsl_backup="$mcsl_dir/src/script/mcsl-backup.sh"
+readonly mcsl_notify="$mcsl_dir/src/script/mcsl-notify.sh"
+
+# Runtime control scripts
 readonly restartctl="$runtime_dir/restartctl"
+readonly uptimectl="$runtime_dir/uptimectl"
 
 # Data
 readonly version_file="$data_dir/version"
@@ -49,8 +57,8 @@ source "$core_dir/loader.sh" || exit 1
 load_module "$core_dir/logger.sh" || exit 1
 load_module "$core_dir/parameter.sh" || exit 1
 
-# Generate log setting behavior
-log_setting "$log_dir/mcsl" "info" "noprint" "combined"
+# Generate log setting
+log_setting "$logs_dir/mcsl" "info" "print" "combined"
 
 # ================================[ Function ]================================ #
 
@@ -203,7 +211,7 @@ main() {
         # Console command. Attaches to the tmux session of the server.
         console|--console|-c)
             load_module "$core_dir/tmux.sh" || return 1
-            attach_tmux "$session" || return 1
+            attach_tmux "${session}:0" || return 1
         ;;
 
         # Status command. Prints the status of the server.
