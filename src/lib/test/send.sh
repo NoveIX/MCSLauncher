@@ -18,7 +18,7 @@ send_server() {
 
     # Remote session delegation - ALL MODE (priority)
     if [[ "${all,,}" == "true" ]]; then
-        load_module "$core_dir/caller.sh"
+        load_module "$core_dir/caller.sh" || return 1
 
         for dir in "$server_container"/*/; do
             [[ -d "$dir" ]] || continue
@@ -36,7 +36,7 @@ send_server() {
 
     # Remote session delegation - SINGLE SESSION
     if [[ "$session" != "$session_name" ]]; then
-        load_module "$core_dir/caller.sh"
+        load_module "$core_dir/caller.sh" || return 1
 
         # Call command in the specified session
         call_mcsl "$session" send "$cmd" || true
@@ -51,7 +51,7 @@ send_server() {
     load_module "$core_dir/tmux.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
 
     # Send command to tmux session if it exists
     if exists_tmux "$session"; then

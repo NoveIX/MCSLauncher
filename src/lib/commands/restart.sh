@@ -19,40 +19,18 @@ restart_server() {
 
     # REMOTE DELEGATION
 
-    # Remote session delegation - ALL MODE (priority)
-    if [[ "${all,,}" == "true" ]]; then
-        load_module "$core_dir/caller.sh"
+    if [[ "${all,,}" == "true" || "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh" || return 1
 
         local -a args=()
-
-        # Only pass the --console flag if console is set to true (case-insensitive)
         [[ "${console,,}" == "true" ]] && args+=(--console)
 
-        for dir in "$server_container"/*/; do
-            [[ -d "$dir" ]] || continue
-
-            # Extract the session name from the directory path
-            session="${dir%/}"
-            session="${session##*/}"
-
-            # Call command in the specified session
-            call_mcsl "$session" restart --time "$time" "${args[@]}" || true
-        done
-
-        return 0
-    fi
-
-    # Remote session delegation - SINGLE SESSION
-    if [[ "$session" != "$session_name" ]]; then
-        load_module "$core_dir/caller.sh"
-
-        local -a args=()
-
-        # Only pass the --console flag if console is set to true (case-insensitive)
-        [[ "${console,,}" == "true" ]] && args+=(--console)
-
-        # Call command in the specified session
-        call_mcsl "$session" restart --time "$time" "${args[@]}" || true
+        # Call command in the specified session or all sessions
+        if [[ "${all,,}" == "true" ]]; then
+            call_sessions restart --time "$time" "${args[@]}" || return 1
+        else
+            call_session "$session" restart --time "$time" "${args[@]}" || return 1
+        fi
 
         return 0
     fi
@@ -66,7 +44,7 @@ restart_server() {
     load_module "$commands_dir/stop.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
 
     # Restart server
     if exists_tmux "$session"; then

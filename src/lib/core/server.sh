@@ -72,10 +72,7 @@ get_port() {
     local file="$1"
 
     # Check mandatory parameters
-    if [[ -z "$file" ]]; then
-        log_error "get_port: missing required parameter: file" "print" "err"
-        return 1
-    fi
+    require_param "file" "$file" "get_port" "err" || return 1
 
     # Check server.properties exists
     if [[ ! -f "$file" ]]; then

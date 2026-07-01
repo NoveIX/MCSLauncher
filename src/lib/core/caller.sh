@@ -23,17 +23,50 @@ call_mcsl() {
 
     # Check if the mcsl command exists in the specified session
     if [[ ! -f "$mcslsh" ]]; then
-        log_error "mcsl not found for tmux session $session: $mcslsh" "print"
+        log_error "mcsl not found for server $session: $mcslsh" "print"
         return 1
     fi
 
-    log_info "executing command $cmd in tmux session $session" "$print"
+    log_info "executing command $cmd for server $session" "$print"
 
     # Call mcsl with all remaining args
     if ! bash "$mcslsh" "$cmd" "$@"; then
-        log_error "command $cmd failed in tmux session $session" "print"
+        log_error "command $cmd failed in for server $session" "print"
         return 1
     fi
+
+    return 0
+}
+
+call_session() {
+    local session="$1"
+    local command="$2"
+    shift 2
+
+    # Check mandatory parameters
+    require_param "session" "$session" "call_session" || return 1
+    require_param "command" "$command" "call_session" || return 1
+
+    call_mcsl "$session" "$command" "$@" || true
+
+    return 0
+}
+
+call_sessions() {
+    local command="$1"
+    shift
+
+    # Check mandatory parameters
+    require_param "command" "$command" "call_sessions" || return 1
+
+    for dir in "$server_container"/*/; do
+        [[ -d "$dir" ]] || continue
+
+        local session="${dir%/}"
+        session="${session##*/}"
+
+        call_mcsl "$session" "$command" "$@" || true
+    done
 
     return 0
 }

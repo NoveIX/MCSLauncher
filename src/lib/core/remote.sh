@@ -5,7 +5,7 @@
 
 # ================================[ Function ]================================ #
 
-call_ssh() {
+execute_ssh() {
     local host="$1"
     local user="$2"
     local key="$3"
@@ -13,7 +13,7 @@ call_ssh() {
     shift 4
 
     # Check mandatory parameters
-    require_param "host" "$host" "call_ssh" || return 1
+    require_param "host" "$host" "execute_ssh" || return 1
 
     local target="${user:+$user@}$host"
 
@@ -34,7 +34,7 @@ test_ssh() {
     require_param "host" "$host" "test_ssh" || return 1
 
     # simple SSH connectivity test
-    call_ssh "$host" "$user" "$key" "$port" ":" >/dev/null 2>&1
+    execute_ssh "$host" "$user" "$key" "$port" ":" >/dev/null 2>&1
 }
 
 sshcheck_command() {
@@ -50,7 +50,7 @@ sshcheck_command() {
     require_param "host" "$host" "sshcheck_command" || return 1
 
     # Check if command exists - remote SSH
-    if ! call_ssh "$host" "$user" "$key" "$port" command -v "$cmd" >/dev/null 2>&1; then
+    if ! execute_ssh "$host" "$user" "$key" "$port" command -v "$cmd" >/dev/null 2>&1; then
         local msg="required command not found on remote host $host: $cmd"
 
         # Log message based on mode

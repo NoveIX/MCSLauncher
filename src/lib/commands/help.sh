@@ -80,6 +80,5 @@ More info:
 License:              GPL-3.0-or-later
 Author:               NoveIX
 Version:              $version
-Date:                 2026-06-18
 EOF
 }

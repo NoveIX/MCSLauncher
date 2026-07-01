@@ -43,14 +43,14 @@ if [[ ! -f "$core_dir/loader.sh" ]]; then
 fi
 
 # Load loader module
-source "$core_dir/loader.sh"
+source "$core_dir/loader.sh" || exit 1
 
 # Load required module
-load_module "$core_dir/logger.sh"
-load_module "$core_dir/parameter.sh"
+load_module "$core_dir/logger.sh" || exit 1
+load_module "$core_dir/parameter.sh" || exit 1
 
 # Generate log setting behavior
-log_setting "$log_dir/mcsl" "info" "" "combined"
+log_setting "$log_dir/mcsl" "info" "noprint" "combined"
 
 # ================================[ Function ]================================ #
 
@@ -65,14 +65,14 @@ main() {
 
     # If the command is help, print help immediately and skip flag parsing.
     if [[ "${cmd,,}" =~ ^(help|--help|-h)$ ]]; then
-        load_module "$commands_dir/help.sh"
+        load_module "$commands_dir/help.sh" || return 1
         print_help
         return 0
     fi
 
     # If the command is version, print version immediately and skip flag parsing.
     if [[ "${cmd,,}" =~ ^(version|--version|-v)$ ]]; then
-        load_module "$commands_dir/version.sh"
+        load_module "$commands_dir/version.sh" || return 1
         print_version
         return 0
     fi
@@ -184,52 +184,52 @@ main() {
     case "${cmd,,}" in
         # Start command. Starts the server.
         start)
-            load_module "$commands_dir/start.sh"
-            start_server "$session" "$console" "$all"
+            load_module "$commands_dir/start.sh" || return 1
+            start_server "$session" "$console" "$all" || return 1
         ;;
 
         # Stop command. Stops the server with an optional delay before stopping.
         stop)
-            load_module "$commands_dir/stop.sh"
-            stop_server "$session" "$time" "shutdown" "$all"
+            load_module "$commands_dir/stop.sh" || return 1
+            stop_server "$session" "$time" "shutdown" "$all" || return 1
         ;;
 
         # Restart command. Stops and then starts the server with a optional delay before stopping.
         restart)
-            load_module "$commands_dir/restart.sh"
-            restart_server "$session" "$time" "$console" "$all"
+            load_module "$commands_dir/restart.sh" || return 1
+            restart_server "$session" "$time" "$console" "$all" || return 1
         ;;
 
         # Console command. Attaches to the tmux session of the server.
         console|--console|-c)
-            load_module "$core_dir/tmux.sh"
-            attach_tmux "$session"
+            load_module "$core_dir/tmux.sh" || return 1
+            attach_tmux "$session" || return 1
         ;;
 
         # Status command. Prints the status of the server.
         status)
-            load_module "$commands_dir/status.sh"
-            status_server "$session" "${host:-localhost}" "${port:-25565}" "$all"
+            load_module "$commands_dir/status.sh" || return 1
+            status_server "$session" "${host:-localhost}" "${port:-25565}" "$all" || return 1
         ;;
 
         # Migration command. Migrates the server to another location or host.
         migrate)
-            load_module "$commands_dir/migrate.sh"
-            migrate_server "$dest" "$host" "$user" "$key" "$port" "$time"
+            load_module "$commands_dir/migrate.sh" || return 1
+            migrate_server "$dest" "$host" "$user" "$key" "$port" "$time" || return 1
         ;;
 
         # Kill command. Kill the tmux session of the server immediately without a graceful shutdown.
         # Use with caution as it may cause data loss or corruption.
         # This command does not support remote delegation and will only kill the session on the local machine.
         kill)
-            load_module "$commands_dir/kill.sh"
-            kill_server "$session" "$confirm"
+            load_module "$commands_dir/kill.sh" || return 1
+            kill_server "$session" "$confirm" || return 1
         ;;
 
         # SelfUpdate command. Updates the mcsl script itself.
         selfupdate)
-            load_module "$commands_dir/selfupdate.sh"
-            selfupdate "$session" "$all"
+            load_module "$commands_dir/selfupdate.sh" || return 1
+            selfupdate "$session" "$all" || return 1
         ;;
 
         # Default case. Prints the help message for mcsl.

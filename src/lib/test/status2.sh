@@ -35,7 +35,7 @@ status_server() {
         load_module "$core_dir/tmux.sh" || return 1
 
         # Check required dependencies
-        check_command "tmux" || return 1
+        check_command "tmux" "fatal" || return 1
 
         # Check if the tmux session exists
         if exists_tmux "$session"; then

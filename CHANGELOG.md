@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-07-01
+
+### Added
+- Added `call_session()` for executing commands on a specific server.
+- Added `call_sessions()` for executing commands across multiple servers.
+
+### Changed
+- Renamed `call_ssh()` to `execute_ssh()`.
+- Improved error handling during module loading and initialization.
+- Improved logging control in `mcsl.sh`.
+- Updated error messages to consistently refer to "server" instead of "tmux session".
+- Improved version detection and fallback behavior.
+- Refined help and version command output.
+- Enhanced the `status` command with a visual indicator showing whether the server session is running.
+- Added automatic creation and update of the `.mcsl` metadata file containing the MCSL installation path.
+- Normalized destination paths by stripping trailing slashes in migration and path handling logic.
+
+### Fixed
+- Fixed critical module loading failures not being handled correctly.
+- Fixed version file handling in edge cases.
+
 ## [2.1.0] - 2026-06-29
 
 ### Added

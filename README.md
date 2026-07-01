@@ -2,8 +2,6 @@
 
 [![Bash](https://img.shields.io/badge/Bash-4%2B-brightgreen?style=for-the-badge)](https://www.gnu.org/software/bash/) [![tmux](https://img.shields.io/badge/tmux-required-blue?style=for-the-badge)](https://github.com/tmux/tmux) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 
-Last updated: 2026-06-19
-
 ---
 
 ## 📝 Description

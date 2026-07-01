@@ -43,11 +43,13 @@ migrate_local() {
     load_module "$commands_dir/stop.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
     check_command "rsync" || return 1
 
     # Trim trailing slash from destination path
-    dest="${dest%/}"
+    while [[ "$dest" == */ ]]; do
+        dest="${dest%/}"
+    done
 
     # Log migration info
     printf '\n'
@@ -138,7 +140,7 @@ migrate_remote() {
     load_module "$commands_dir/stop.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
     check_command "ssh" || return 1
     check_command "rsync" || return 1
 
@@ -149,7 +151,9 @@ migrate_remote() {
     fi
 
     # Trim trailing slash from destination path
-    dest="${dest%/}"
+    while [[ "$dest" == */ ]]; do
+        dest="${dest%/}"
+    done
 
     # separate user and host if host contains '@'
     if [[ "$host" == *@* ]]; then
@@ -170,7 +174,7 @@ migrate_remote() {
     # Check required dependencies on remote host
     sshcheck_command "ssh" "$host" "" "$user" "$key" "$port" || return 1
     sshcheck_command "rsync" "$host" "" "$user" "$key" "$port" || return 1
-    sshcheck_command "tmux" "$host" "" "$user" "$key" "$port" || return 1
+    sshcheck_command "tmux" "$host" "fatal" "$user" "$key" "$port" || return 1
     sshcheck_command "java" "$host" "warn" "$user" "$key" "$port" || true
 
     # Log migration info
@@ -198,13 +202,13 @@ migrate_remote() {
     log_setting
 
     # Ensure directory
-    if ! call_ssh "$host" "$user" "$key" "$port" mkdir -p "$dest"; then
+    if ! execute_ssh "$host" "$user" "$key" "$port" mkdir -p "$dest"; then
         log_error "failed to create remote directory: $login:$dest/" "print"
         return 1
     fi
 
     # Check empty dir - NOTE: find+grep returns 0 if NOT empty, 1 if empty (inverted logic)
-    if call_ssh "$host" "$user" "$key" "$port" "find '$dest' -mindepth 1 -print -quit | grep -q ."; then
+    if execute_ssh "$host" "$user" "$key" "$port" "find '$dest' -mindepth 1 -print -quit | grep -q ."; then
         log_error "destination directory is not empty: $login:$dest/" "print"
         return 1
     fi
@@ -248,7 +252,7 @@ migrate_remote() {
     read -r -p "Restart server now? [Y/n]: " ask
 
     # Restart server if user agrees (default is yes)
-    [[ "${ask,,}" != "n" ]] && call_ssh "$host" "$user" "$key" "$port" bash "$dest/mcsl/$mcsl_name" start || return 1
+    [[ "${ask,,}" != "n" ]] && execute_ssh "$host" "$user" "$key" "$port" bash "$dest/mcsl/$mcsl_name" start || return 1
 
     return 0
 }

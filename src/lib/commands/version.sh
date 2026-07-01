@@ -7,17 +7,19 @@
 
 get_version() {
     # Check mandatory parameters
-    if [[ -z "$version_file" ]]; then
-        log_error "get_version: missing version file" "print" "err"
-        return 1
-    fi
+    require_param "version_file" "$version_file" "get_version" "err" || return 1
 
     # Extract version by removing ONLY carriage returns, preserving all spaces
     local version
-    IFS= read -r version < "$version_file"
+    if ! IFS= read -r version < "$version_file";then
+        log_error "failed to read version from $version_file" "print" "err"
+        printf '%s\n' "unknown"
+        return 0
+    fi
 
     # Print the version string, stripping the \r if present
     printf '%s\n' "${version//$'\r'/}"
+    return 0
 }
 
 print_version() {

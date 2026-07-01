@@ -46,7 +46,7 @@ log_setting "$log_dir/mcslctl" "info" "print" "$log_mode"
 # Read mcslctl config behavior
 log_info "read mcslctl config"
 read_config "$cfg_dir/mcslctl.conf" || exit 1
-read_notify_config "$cfg_dir/mcslctl-notify.conf" || true
+read_config_notify "$cfg_dir/mcslctl-notify.conf" || true
 
 # Change dir to Minecraft server
 cd "$mcsl_dir/.."
@@ -66,7 +66,7 @@ while [[ ${statectl,,} != "stop" ]]; do
             send_discord "$DiscordWebHook" "$ServerName" "Server is starting" "2935556" || true
         fi
 
-        if [[ -n "${TelegramToken:-}" ]] && [[ -n "${TelegramChatID:-}" ]]; then
+        if [[ -n "${TelegramToken:-}" && -n "${TelegramChatID:-}" ]]; then
             send_telegram "$TelegramToken" "$TelegramChatID" "<b>$ServerName</b>\n<i>🟢 Server is starting</i>" || true
         fi
     fi
@@ -76,7 +76,7 @@ while [[ ${statectl,,} != "stop" ]]; do
 
     # Start Minecraft server
     if [[ -f "$StartCommand" ]]; then
-        log_info "starting Minecraft server using script: $StartCommand"
+        log_info "starting Minecraft server using configured script: $StartCommand"
         bash "$StartCommand" || rc=$?
     else
         log_info "starting Minecraft server using configured command: $StartCommand"
@@ -113,7 +113,7 @@ while [[ ${statectl,,} != "stop" ]]; do
                 send_discord "$DiscordWebHook" "$ServerName" "Server stopped" || true
             fi
 
-            if [[ -n "${TelegramToken:-}" ]] && [[ -n "${TelegramChatID:-}" ]]; then
+            if [[ -n "${TelegramToken:-}" && -n "${TelegramChatID:-}" ]]; then
                 send_telegram "$TelegramToken" "$TelegramChatID" "<b>$ServerName</b>\n<i>🔵 Server stopped</i>" || true
             fi
         fi
@@ -131,7 +131,7 @@ while [[ ${statectl,,} != "stop" ]]; do
             send_discord "$DiscordWebHook" "$ServerName" "Server crashed after $(format_duration "$uts"). Restarting" "15910673" || true
         fi
 
-        if [[ -n "${TelegramToken:-}" ]] && [[ -n "${TelegramChatID:-}" ]]; then
+        if [[ -n "${TelegramToken:-}" && -n "${TelegramChatID:-}" ]]; then
             send_telegram "$TelegramToken" "$TelegramChatID" "<b>$ServerName</b>\n<i>🟡 Server crashed after $(format_duration "$uts"). Restarting</i>" || true
         fi
     fi
@@ -145,7 +145,7 @@ while [[ ${statectl,,} != "stop" ]]; do
                 send_discord "$DiscordWebHook" "$ServerName" "Server crash limit reached (Max $MaxRestart). Server will not restart" "16711680" || true
             fi
 
-            if [[ -n "${TelegramToken:-}" ]] && [[ -n "${TelegramChatID:-}" ]]; then
+            if [[ -n "${TelegramToken:-}" && -n "${TelegramChatID:-}" ]]; then
                 send_telegram "$TelegramToken" "$TelegramChatID" "<b>$ServerName</b>\n<i>🔴 Server crash limit reached (Max $MaxRestart). Server will not restart</i>" || true
             fi
         fi

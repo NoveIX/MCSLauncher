@@ -19,30 +19,15 @@ stop_server() {
 
     # REMOTE DELEGATION
 
-    # Remote session delegation - ALL MODE (priority)
-    if [[ "${all,,}" == "true" ]]; then
-        load_module "$core_dir/caller.sh"
+        if [[ "${all,,}" == "true" || "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh" || return 1
 
-        for dir in "$server_container"/*/; do
-            [[ -d "$dir" ]] || continue
-
-            # Extract the session name from the directory path
-            session="${dir%/}"
-            session="${session##*/}"
-
-            # Call command in the specified session
-            call_mcsl "$session" stop --time "$time" || true
-        done
-
-        return 0
-    fi
-
-    # Remote session delegation - SINGLE SESSION
-    if [[ "$session" != "$session_name" ]]; then
-        load_module "$core_dir/caller.sh"
-
-        # Call command in the specified session
-        call_mcsl "$session" stop --time "$time" || true
+        # Call command in the specified session or all sessions
+        if [[ "${all,,}" == "true" ]]; then
+            call_sessions stop --time "$time" || return 1
+        else
+            call_session "$session"  stop --time "$time" || return 1
+        fi
 
         return 0
     fi
@@ -56,7 +41,7 @@ stop_server() {
     load_module "$core_dir/filesystem.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
 
     # Check if the tmux session exists. If it does, proceed with the shutdown process. If not, simply return without doing anything.
     if exists_tmux "$session"; then

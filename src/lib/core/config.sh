@@ -44,11 +44,11 @@ LogMode=separate
 EOF
 }
 
-default_notify_config() {
+default_config_notify() {
     local file="$1"
 
     # Check mandatory parameters
-    require_param "file" "$file" "default_notify_config" || return 1
+    require_param "file" "$file" "default_config_notify" || return 1
 
     # Create and write default config
     cat <<"EOF" > "$file"
@@ -142,7 +142,7 @@ read_config() {
     LogMode="${LogMode:-separate}"
 
     # Validation
-    if [[ ! "$CrashHandle" =~ ^(true|false)$ ]]; then
+    if [[ ! "${CrashHandle,,}" =~ ^(true|false)$ ]]; then
         log_warn "invalid CrashHandle value $CrashHandle (expected true|false)" "print"
     fi
 
@@ -164,13 +164,13 @@ read_config() {
     return 0
 }
 
-read_notify_config() {
+read_config_notify() {
     local file="$1"
     local key value
     local valid=true
 
     # Check mandatory parameters
-    require_param "file" "$file" "read_notify_config" || return 1
+    require_param "file" "$file" "read_config_notify" || return 1
 
     # Ensure cfg dir
     if [[ ! -d "$cfg_dir" ]]; then
@@ -180,7 +180,7 @@ read_notify_config() {
     # Check if config file exists
     if [[ ! -f "$file" ]]; then
         log_info "generating default notify configuration" "print"
-        default_notify_config "$file"
+        default_config_notify "$file"
     fi
 
     # Check if config file is readable

@@ -15,30 +15,15 @@ selfupdate() {
 
     # REMOTE DELEGATION
 
-    # Remote session delegation - ALL MODE (priority)
-    if [[ "${all,,}" == "true" ]]; then
-        load_module "$core_dir/caller.sh"
+    if [[ "${all,,}" == "true" || "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh" || return 1
 
-        for dir in "$server_container"/*/; do
-            [[ -d "$dir" ]] || continue
-
-            # Extract the session name from the directory path
-            session="${dir%/}"
-            session="${session##*/}"
-
-            # Call command in the specified session
-            call_mcsl "$session" selfupdate || true
-        done
-
-        return 0
-    fi
-
-    # Remote session delegation - SINGLE SESSION
-    if [[ "$session" != "$session_name" ]]; then
-        load_module "$core_dir/caller.sh"
-
-        # Call command in the specified session
-        call_mcsl "$session" selfupdate || true
+        # Call command in the specified session or all sessions
+        if [[ "${all,,}" == "true" ]]; then
+            call_sessions selfupdate || return 1
+        else
+            call_session "$session" selfupdate || return 1
+        fi
 
         return 0
     fi

@@ -17,40 +17,18 @@ start_server() {
 
     # REMOTE DELEGATION
 
-    # Remote session delegation - ALL MODE (priority)
-    if [[ "${all,,}" == "true" ]]; then
-        load_module "$core_dir/caller.sh"
+    if [[ "${all,,}" == "true" || "$session" != "$session_name" ]]; then
+        load_module "$core_dir/caller.sh" || return 1
 
         local -a args=()
-
-        # Only pass the --console flag if console is set to true (case-insensitive)
         [[ "${console,,}" == "true" ]] && args+=(--console)
 
-        for dir in "$server_container"/*/; do
-            [[ -d "$dir" ]] || continue
-
-            # Extract the session name from the directory path
-            session="${dir%/}"
-            session="${session##*/}"
-
-            # Call command in the specified session
-            call_mcsl "$session" start "${args[@]}" || true
-        done
-
-        return 0
-    fi
-
-    # Remote session delegation - SINGLE SESSION
-    if [[ "$session" != "$session_name" ]]; then
-        load_module "$core_dir/caller.sh"
-
-        local -a args=()
-
-        # Only pass the --console flag if console is set to true (case-insensitive)
-        [[ "${console,,}" == "true" ]] && args+=(--console)
-
-        # Call command in the specified session
-        call_mcsl "$session" start "${args[@]}" || true
+        # Call command in the specified session or all sessions
+        if [[ "${all,,}" == "true" ]]; then
+            call_sessions start "${args[@]}" || return 1
+        else
+            call_session "$session" start "${args[@]}" || return 1
+        fi
 
         return 0
     fi
@@ -67,7 +45,7 @@ start_server() {
         # Generate default configuration file
         log_info "generating default configuration" "print"
         default_config "$cfg_dir/mcslctl.conf"
-        default_notify_config "$cfg_dir/mcslctl-notify.conf"
+        default_config_notify "$cfg_dir/mcslctl-notify.conf"
 
         # Log message to inform the user about the generated configuration file
         log_info "edit '$cfg_dir/mcslctl.conf' to configure mcslctl behavior" "print"
@@ -83,7 +61,7 @@ start_server() {
     load_module "$core_dir/config.sh" || return 1
 
     # Check required dependencies
-    check_command "tmux" || return 1
+    check_command "tmux" "fatal" || return 1
     check_command "java" "warn" || true
 
     # Check if the tmux session already exists

@@ -66,9 +66,9 @@ log_setting() {
 # main log function that handles log level checking, terminal output, and file output based on the provided parameters.
 log() {
     local level="$1"
-    local message="$2"
+    local message=$(printf %b "$2")
     local print="${3:-$global_print}"
-    local mode="${4:-out}"
+    local stream="${4:-out}"
     local path="${5:-$global_logfile}"
 
     # log level check
@@ -79,7 +79,7 @@ log() {
 
     # terminal output
     if [[ ${print,,} == "print" ]]; then
-        case "${mode,,}" in
+        case "${stream,,}" in
             out)
                 printf '%b%s%b: %s\n' "$color" "${level,,}" "$reset" "$message"
             ;;
@@ -135,7 +135,7 @@ log_warn() {
 
     # Print on warn file log
     if [[ -n "${global_logfile_warn:-}" ]]; then
-        log "WARN" "${1:-}" "noprint" "out" "$global_logfile_warn"
+        log "WARN" "${1:-}" "noprint" "none" "$global_logfile_warn"
     fi
 }
 
@@ -145,7 +145,7 @@ log_error() {
 
     # Print on error file log
     if [[ -n "${global_logfile_error:-}" ]]; then
-        log "ERROR" "${1:-}" "noprint" "out" "$global_logfile_error"
+        log "ERROR" "${1:-}" "noprint" "none" "$global_logfile_error"
     fi
 }
 
@@ -155,7 +155,7 @@ log_fatal() {
 
     # Print on fatal file log
     if [[ -n "${global_logfile_fatal:-}" ]]; then
-        log "FATAL" "${1:-}" "noprint" "out" "$global_logfile_fatal"
+        log "FATAL" "${1:-}" "noprint" "none" "$global_logfile_fatal"
     fi
 }
 
