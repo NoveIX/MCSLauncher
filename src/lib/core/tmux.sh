@@ -17,7 +17,7 @@ exists_tmux() {
 
 attach_tmux() {
     local session="$1"
-    local window="$2"
+    local window="${2:-0}"
 
     # Check mandatory parameters
     require_param "session" "$session" "attach_tmux" || return 1

@@ -22,12 +22,15 @@ readonly core_dir="$mcsl_dir/src/lib/core"
 # Runtime directory and control files
 readonly runtime_dir="$mcsl_dir/.runtime"
 readonly mcslctl="$runtime_dir/mcslctl"
+readonly crashctl="$runtime_dir/crashctl"
 readonly uptimectl="$runtime_dir/uptimectl"
 readonly restartctl="$runtime_dir/restartctl"
 
 # Runtime state variables
-statectl="run"
-crashctl=0
+runtime_status="run"
+crash_count=0
+
+# ==============================[ Import module ]============================= #
 
 # Check if loader module exists
 if [[ ! -f "$core_dir/loader.sh" ]]; then
@@ -45,25 +48,26 @@ load_module "$core_dir/config.sh" || exit 1
 load_module "$core_dir/common.sh" || exit 1
 load_module "$core_dir/notifier.sh" || exit 1
 
+# ===========================[ runtime bootstrap ]============================ #
+
 # Generate log setting
 log_setting "$logs_dir/runtime" "info" "print" "$log_mode"
 
 # Read mcsl runtime config
-log_info "read mcsl config"
 read_config_runtime "$cfg_dir/runtime.conf" || exit 1
 read_config_notify "$cfg_dir/notify.conf" || true
-
-# Create a control file to indicate that the mcsl runtime is up and running
-printf 'Minecraft Server Launcher Runtime Up\n' > "$mcslctl"
-log_debug "mcsl runtime control file created: $mcslctl"
 
 # Change dir to Minecraft server
 cd "$mcsl_dir/.."
 log_info "changing working directory to the Minecraft server root"
 
+# Start mcsl runtime process
+printf 'Minecraft Server Launcher Runtime Up\n' > "$mcslctl"
+log_info "starting mcsl runtime core"
+
 # ==============================[ runtime core ]============================== #
 
-while [[ "${statectl,,}" != "stop" ]]; do
+while [[ "${runtime_status,,}" != "stop" ]]; do
     # Start timestamp
     sts=$(date +%s)
     log_debug "server start timestamp registered: $sts"
@@ -74,6 +78,9 @@ while [[ "${statectl,,}" != "stop" ]]; do
 
     # set return code for server start command
     rc=0
+
+    # Remove crash control file
+    rm -f "$crashctl"
 
     # Start Minecraft server
     if [[ -f "$START_COMMAND" ]]; then
@@ -102,35 +109,38 @@ while [[ "${statectl,,}" != "stop" ]]; do
     # Stop requested
     if [[ ! -f "$restartctl" ]]; then
         runtime_notification "stop"
-        statectl="stop"; continue
+        runtime_status="stop"; continue
     fi
 
     # Check crash handling setting
     if [[ "${CRASH_HANDLE,,}" == "false" ]]; then
         log_info "crash handling disabled. Server will not restart"
-        runtime_notification "crashctl"
-        statectl="stop"; continue
+        runtime_notification "handle"
+        runtime_status="stop"; continue
     fi
 
+    # Create crash control file
+    printf 'Minecraft Server Launcher Runtime Crash Detected\n' > "$crashctl"
+
     # Server crashed
-    (( crashctl++ )) || true
-    log_warn "Minecraft server crashed. Restarting (attempt $crashctl)"
+    (( crash_count++ )) || true
+    log_warn "Minecraft server crashed. Restarting (attempt $crash_count)"
     runtime_notification "crash"
 
     # Check crash retry limit
-    if (( MAX_RESTART >= 0 && crashctl >= MAX_RESTART )); then
+    if (( MAX_RESTART >= 0 && crash_count >= MAX_RESTART )); then
         log_warn "crash limit reached (Max $MAX_RESTART). Server will not restart"
         runtime_notification "loop"
-        statectl="stop"; continue
+        runtime_status="stop"; continue
     fi
 
     # Little delay before restart to prevent cpu saturation in case of instant crash loop
     sleep 5
 done
 
-# Clear control files
+# Stop mcsl runtime process
+log_info "shutting down mcsl runtime core"
 rm -r "$mcslctl"
-log_debug "mcsl runtime control file removed: $mcslctl"
 
-# sleep to read logs before tmux session is closed
-sleep 5
+# sleep to read logs before tmux close
+sleep 10

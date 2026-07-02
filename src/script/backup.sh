@@ -24,12 +24,15 @@ readonly core_dir="$mcsl_dir/src/lib/core"
 # Runtime directory and control files
 readonly runtime_dir="$mcsl_dir/.runtime"
 readonly mcslctl="$runtime_dir/mcslctl"
+readonly crashctl="$runtime_dir/crashctl"
 
 # Backup configuration variables
 readonly backup_dir="$server_root/backups"
 
 # Runtime state variables
-statectl="run"
+runtime_status="run"
+
+# ==============================[ Import module ]============================= #
 
 # Check if loader module exists
 if [[ ! -f "$core_dir/loader.sh" ]]; then
@@ -49,57 +52,86 @@ load_module "$core_dir/server.sh" || exit 1
 load_module "$core_dir/tmux.sh" || exit 1
 load_module "$core_dir/filesystem.sh" || exit 1
 
+# ============================[ backup bootstrap ]============================ #
+
 # Generate log setting
 log_setting "$logs_dir/backup" "info" "print" "$log_mode"
 
 # Read mcsl backup config
-log_info "read mcsl backup config"
 read_config_backup "$cfg_dir/backup.conf" || exit 1
+
+# Change dir to Minecraft server
+cd "$mcsl_dir/.."
+log_info "changing working directory to the Minecraft server root"
 
 # Read world directory from server.properties
 log_info "read world directory from server.properties"
 world_dir=$(get_property "$server_root/server.properties" "level-name" ) || true
 
-# Change dir to Minecraft server
-cd "$server_root"
-log_info "changing working directory to the Minecraft server root"
+# Start backup process
+log_info "starting mcsl backup core at $(date "+%F %T")"
 
-# ============================[ mcsl backup core ]============================ #
+# ==============================[ backup core ]=============================== #
 
-start_time=$(date +%s)
+sts=$(date +%s)
 
+# Wait for mcslctl to be available
 while [[ ! -f "$mcslctl" ]]; do
     now=$(date +%s)
-    if (( now - start_time >= 60 )); then
+    if (( now - sts >= 120 )); then
         log_fatal "timeout waiting for $mcslctl"
-        statectl="stop"
-        break
+        runtime_status="stop"; break
     fi
 
     sleep 1
 done
 
-while [[ "${statectl,,}" != "stop" ]]; do
+# Backup loop
+while [[ "${runtime_status,,}" != "stop" ]]; do
 
     # Ensure directory
-    if ! mkdir -p "$backup_dir"; then
-        log_error "failed to create directory: $backup_dir" "print"
-        statectl="stop"
-        continue
+    [[ -d "$backup_dir" ]] || mkdir -p "$backup_dir"
+
+    # Convert minutes in seconds
+    delay=$((BACKUP_DELAY * 60))
+    elapsed=0
+
+    # Sleep loop with check every second
+    while [[ $elapsed -lt $delay ]]; do
+        # Check if mcslctl exists
+        if [[ ! -f "$mcslctl" ]]; then
+            log_info "mcsl runtime control file not found. stopping backup process"
+            runtime_status="stop"; break
+        fi
+
+        # Check if crashctl exists
+        if [[ -f "$crashctl" ]]; then
+            log_info "crash detected. Skipping current backup"
+            continue 2
+        fi
+
+        ((elapsed++)) || true
+        sleep 1
+    done
+
+    # Performs the last backup before shutting down
+    [[ "${runtime_status,,}" == "stop" ]] && sleep 10
+
+    if [[ ! -d "$world_dir" ]]; then
+        log_error "world directory not found: $world_dir" "print"
     fi
 
-    sleep 60
+    # Backup execution
     ts=$(date +%Y-%m-%d-%H-%M-%S)
-    send_tmux "${session_name}:0" "save-all flush"
-    wait_save "$server_root/logs/latest.log" "Saved the game"
-    zip -r "$backup_dir/${ts}.zip" "$world_dir"
-    #sleep $BACKUP_DELAY
 
-    if [[ ! -f "$mcslctl" ]]; then
-        statectl="stop"
-        continue
-    fi
+    send_tmux "$session_name" "save-all flush"
+    wait_pattern "$server_root/logs/latest.log" "Saved the game"
+
+    zip -r "$backup_dir/${ts}.zip" "$world_dir"
 done
 
-# sleep to read logs before tmux session is closed
-sleep 5
+# Stop mcsl backup process
+log_info "shutting down mcsl backup core at $(date "+%F %T")"
+
+# sleep to read logs before tmux close
+sleep 10

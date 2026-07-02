@@ -151,7 +151,7 @@ runtime_notification() {
             telegram_event "<b>$ServerName</b>\n<i>🔵 Server stopped</i>"
         ;;
 
-        crashctl)
+        handle)
             discord_event "$ServerName" "Crash handling disabled. Server will not restart"
             telegram_event "<b>$ServerName</b>\n<i>🟡 Crash handling disabled. Server will not restart</i>"
         ;;
