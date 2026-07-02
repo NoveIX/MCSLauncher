@@ -21,7 +21,7 @@ readonly core_dir="$mcsl_dir/src/lib/core"
 readonly commands_dir="$mcsl_dir/src/lib/commands"
 
 # Runtime directory and script
-readonly runtime_dir="$mcsl_dir/runtime"
+readonly runtime_dir="$mcsl_dir/.runtime"
 readonly mcsl_runtime="$mcsl_dir/src/script/runtime.sh"
 readonly mcsl_backup="$mcsl_dir/src/script/backup.sh"
 readonly mcsl_notify="$mcsl_dir/src/script/notify.sh"
@@ -211,7 +211,7 @@ main() {
         # Console command. Attaches to the tmux session of the server.
         console|--console|-c)
             load_module "$core_dir/tmux.sh" || return 1
-            attach_tmux "${session}:0" || return 1
+            attach_tmux "$session" || return 1
         ;;
 
         # Status command. Prints the status of the server.

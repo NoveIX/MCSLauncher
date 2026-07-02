@@ -8,48 +8,35 @@
 write_restartctl() {
     local file="$1"
 
-    # Check mandatory parameters
-    require_param "file" "$file" "write_restartctl" || return 1
-
     # Ensure cfg dir
-    if [[ ! -d "$(dirname $file)" ]]; then
-        mkdir -p "$(dirname $file)"
-    fi
+    [[ ! -d "$(dirname $file)" ]] && mkdir -p "$(dirname $file)"
 
     # ensure restart/keep-alive file exists
-    if ! printf 'starting server at %s\n' "$(date '+%F %T')" > "$file"; then
-        log_error "write restartctl failed: $file" "print"
-        return 1
+    if printf 'starting server at %s\n' "$(date '+%F %T')" > "$file"; then
+        log_info "created restartctl: $file"
+        return 0
     fi
 
-    log_info "created restartctl: $file"
-    return 0
+    log_error "write restartctl failed: $file" "print"
+    return 1
 }
 
 remove_restartctl() {
     local file="$1"
 
-    # Check mandatory parameters
-    require_param "file" "$file" "remove_restartctl" || return 1
-
     # Remove restartctl file
-    if ! rm -f "$file"; then
-        log_error "remove restartctl failed: $file" "print"
-        return 1
+    if rm -f "$file"; then
+        log_info "removed restartctl: $file"
+        return 0
     fi
 
-    log_info "removed restartctl: $file"
-    return 0
+    log_error "remove restartctl failed: $file" "print"
+    return 1
 }
 
-wait_save() {
+wait_pattern() {
     local file="$1"
     local pattern="$2"
 
-    tail -F "$file" | while read -r line; do
-        echo "$line"
-        if [[ "$line" == *"$pattern"* ]]; then
-            break
-        fi
-    done
+    tail -F "$file" 2>/dev/null | grep -q --line-buffered "$pattern"
 }

@@ -5,7 +5,6 @@
 
 # ================================[ Function ]================================ #
 
-# Check if a tmux session exists
 exists_tmux() {
     local session="$1"
 
@@ -13,19 +12,12 @@ exists_tmux() {
     require_param "session" "$session" "exists_tmux" || return 1
 
     # Check if the tmux session exists
-    if tmux has-session -t "$session" 2>/dev/null; then
-        log_trace "tmux session $session exists"
-        return 0
-    fi
-
-    # Session does not exist
-    log_trace "tmux session $session does not exist"
-    return 1
+    tmux has-session -t "$session" 2>/dev/null
 }
 
-# Attach to a tmux session
 attach_tmux() {
     local session="$1"
+    local window="$2"
 
     # Check mandatory parameters
     require_param "session" "$session" "attach_tmux" || return 1
@@ -37,34 +29,34 @@ attach_tmux() {
     fi
 
     # Attach to the tmux session
-    log_info "attaching to tmux session $session"
-    tmux attach-session -t "$session"
+    log_info "connecting to session $session"
+    tmux attach-session -t "${session}:${window}"
 }
 
-# Send an ENTER key to a tmux session
-enter_tmux() {
-    local session="$1"
+# Send an ENTER key to a tmux session - NOT USED
+#enter_tmux() {
+#    local session="$1"
+#    local window="${2:-0}"
+#
+#    # Check mandatory parameters
+#    require_param "session" "$session" "enter_tmux" || return 1
+#
+#    # Check if the tmux session exists
+#    if ! exists_tmux "$session"; then
+#        log_error "tmux session $session not found" "print"
+#        return 1
+#    fi
+#
+#    # Send an ENTER key to the tmux session
+#    if tmux send-keys -t "${session}:${window}" C-m; then
+#        log_info "sent ENTER to tmux session $session"
+#        return 0
+#    fi
+#
+#    log_error "failed to send ENTER to tmux session $session" "print"
+#    return 1
+#}
 
-    # Check mandatory parameters
-    require_param "session" "$session" "enter_tmux" || return 1
-
-    # Check if the tmux session exists
-    if ! exists_tmux "$session"; then
-        log_error "tmux session $session not found" "print"
-        return 1
-    fi
-
-    # Send an ENTER key to the tmux session
-    if tmux send-keys -t "$session" C-m; then
-        log_info "sent ENTER to tmux session $session"
-        return 0
-    fi
-
-    log_error "failed to send ENTER to tmux session $session" "print"
-    return 1
-}
-
-# Send a command to a tmux session
 send_tmux() {
     local session="$1"
 
@@ -87,7 +79,7 @@ send_tmux() {
     fi
 
     # Send the command to the tmux session
-    if tmux send-keys -t "$session" "$*" C-m; then
+    if tmux send-keys -t "${session}:${window}" "$*" C-m; then
         log_info "sent command to $session: $*"
         return 0
     fi
@@ -120,7 +112,7 @@ kill_tmux() {
 
 wait_tmux() {
     local session="$1"
-    local timeout="${2:-600}"   # default: 10 minutes
+    local timeout="${2:-600}" # default: 10 minutes
     local elapsed=0
 
     # Check mandatory parameters

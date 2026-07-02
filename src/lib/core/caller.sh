@@ -8,6 +8,7 @@
 call_mcsl() {
     local session="$1"
     local cmd="$2"
+    local print="print"
     shift 2
 
     # Check mandatory parameters
@@ -15,7 +16,6 @@ call_mcsl() {
     require_param "cmd" "$cmd" "call_mcsl" || return 1
 
     # status command is special, it should not print the log message
-    local print="print"
     [[ "${cmd,,}" == "status" ]] && print="noprint"
 
     # mcsl command path for the specified session
@@ -27,15 +27,12 @@ call_mcsl() {
         return 1
     fi
 
-    log_info "executing command $cmd for server $session" "$print"
-
     # Call mcsl with all remaining args
-    if ! bash "$mcslsh" "$cmd" "$@"; then
-        log_error "command $cmd failed in for server $session" "print"
-        return 1
-    fi
+    log_info "executing command $cmd on server $session" "$print"
+    bash "$mcslsh" "$cmd" "$@" && return 0
 
-    return 0
+    log_error "command $cmd failed on server $session" "print"
+    return 1
 }
 
 call_session() {
@@ -48,8 +45,6 @@ call_session() {
     require_param "command" "$command" "call_session" || return 1
 
     call_mcsl "$session" "$command" "$@" || true
-
-    return 0
 }
 
 call_sessions() {
@@ -67,6 +62,4 @@ call_sessions() {
 
         call_mcsl "$session" "$command" "$@" || true
     done
-
-    return 0
 }

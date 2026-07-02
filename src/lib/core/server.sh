@@ -20,6 +20,7 @@ EOF
 
 read_eula() {
     local file="$1"
+    local value
 
     # Check mandatory parameters
     require_param "file" "$file" "read_eula" || return 1
@@ -30,15 +31,16 @@ read_eula() {
         default_eula "$file"
     fi
 
-    local value
+    # Read the eula value from the file
     value=$(grep -E '^[[:space:]]*eula[[:space:]]*=' "$file" \
         | tail -n 1 \
         | cut -d'=' -f2 \
-    | tr -d '[:space:]')
+        | tr -d '[:space:]')
 
     # Default if missing
     [[ -z "$value" ]] && value="false"
 
+    # Check if the eula is accepted
     if [[ "$value" != "true" ]]; then
         local answer
         read -r -p "The EULA is not accepted. Accept it now? [y/N]: " answer
@@ -71,6 +73,7 @@ read_eula() {
 get_property() {
     local file="$1"
     local key="$2"
+    local value
 
     # Check mandatory parameters
     require_param "file" "$file" "get_property" "err" || return 1
@@ -83,7 +86,6 @@ get_property() {
     fi
 
     # Extract the key value from file
-    local value
     value=$(grep -m1 -E "^${key}=" "$file") || true
     value=${value#*=}
 

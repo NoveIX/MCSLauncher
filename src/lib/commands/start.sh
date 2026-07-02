@@ -82,26 +82,23 @@ start_server() {
 
         # Create a new detached tmux session that runs the mcsl script
         if tmux new-session -d -s "$session" -n "runtime" \
-        bash "$mcsl_runtime" "$mcsl_dir" "$LOG_MODE"; then
+            bash "$mcsl_runtime" "$mcsl_dir" "$LOG_MODE"; then
             log_info "starting server $session at $(date "+%F %T")"
-            print "starting server $session"
         fi
 
         # Create a new detached tmux window for backup operations
         if [[ "$ENABLE_BACKUP" == "true" ]]; then
             if tmux new-window -t "$session" -n "backup" \
-            bash "$mcsl_backup" "$mcsl_dir" "$session" "$LOG_MODE"; then
+                bash "$mcsl_backup" "$mcsl_dir" "$session" "$LOG_MODE"; then
                 log_info "starting backup scheduler for server $session"
-                print "starting backup scheduler for server $session"
             fi
         fi
 
         # Connect to tmux session
-        [[ ${console,,} == "true" ]] && attach_tmux "${session}:0"
+        [[ ${console,,} == "true" ]] && attach_tmux "$session"
         return 0
     fi
 
     log_info "server $session is running"
-    print "server $session is running"
     return 0
 }

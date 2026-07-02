@@ -15,8 +15,10 @@ execute_ssh() {
     # Check mandatory parameters
     require_param "host" "$host" "execute_ssh" || return 1
 
+    # Build the SSH target string
     local target="${user:+$user@}$host"
 
+    # Execute the SSH command with the provided parameters for scripts
     ssh -o BatchMode=yes -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no \
         ${port:+-p "$port"} \
         ${key:+-i "$key"} \
@@ -50,19 +52,17 @@ sshcheck_command() {
     require_param "host" "$host" "sshcheck_command" || return 1
 
     # Check if command exists - remote SSH
-    if ! execute_ssh "$host" "$user" "$key" "$port" command -v "$cmd" >/dev/null 2>&1; then
-        local msg="required command not found on remote host $host: $cmd"
+    execute_ssh "$host" "$user" "$key" "$port" command -v "$cmd" >/dev/null 2>&1 && return 0
 
-        # Log message based on mode
-        case "${mode,,}" in
-            warn)  log_warn  "$msg" "print" ;;
-            error) log_error "$msg" "print" ;;
-            fatal) log_fatal "$msg" "print" ;;
-            *)     log_error "check_command: invalid mode $mode (defaulting to error): $msg" "print" ;;
-        esac
+    # Log missing command based on priority
+    local msg="required command not found on remote host $host: $cmd"
 
-        return 1
-    fi
+    case "${mode,,}" in
+        warn)  log_warn  "$msg" "print" ;;
+        error) log_error "$msg" "print" ;;
+        fatal) log_fatal "$msg" "print" ;;
+        *)     log_error "check_command: invalid mode $mode (defaulting to error): $msg" "print" ;;
+    esac
 
-    return 0
+    return 1
 }

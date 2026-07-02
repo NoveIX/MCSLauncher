@@ -22,7 +22,7 @@ readonly logs_dir="$mcsl_dir/logs"
 readonly core_dir="$mcsl_dir/src/lib/core"
 
 # Runtime directory and control files
-readonly runtime_dir="$mcsl_dir/runtime"
+readonly runtime_dir="$mcsl_dir/.runtime"
 readonly mcslctl="$runtime_dir/mcslctl"
 
 # Backup configuration variables

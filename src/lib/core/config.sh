@@ -19,9 +19,6 @@ trim() {
 default_config_runtime() {
     local file="$1"
 
-    # Check mandatory parameters
-    require_param "file" "$file" "default_config_runtime" || return 1
-
     # Create and write default config
     cat <<"EOF" > "$file"
 # Minecraft Server Launcher Runtime Configuration
@@ -54,14 +51,55 @@ LogMode=separate
 EOF
 }
 
+default_config_backup() {
+    local file="$1"
+
+    # Create and write default config
+    cat <<"EOF" > "$file"
+# Minecraft Server Launcher Backup Configuration
+
+# Enable or disable automatic backups for the Minecraft server.
+EnableBackup=false
+
+# Backup archive format
+# Supported: zip, tar.gz, tar.bz2, tar.xz, tar.zst (if available)
+# zip is the default and most widely supported format. Requires zip installed on the system.
+BackupFormat=zip
+
+# Backup delay in minutes.
+BackupDelay=30
+EOF
+}
+
+default_config_notify() {
+    local file="$1"
+
+    # Create and write default config
+    cat <<"EOF" > "$file"
+# Minecraft Server Launcher Notification Configuration
+
+# Enable or disable notifications for server events.
+EnableNotification=false
+
+# Name of the server shown in notifications
+ServerName=My Minecraft Server
+
+# Discord webhook URL for server events
+DiscordWebHook=https://discord.com/api/webhooks/HooksId
+
+# Telegram bot token
+TelegramToken=TokenId
+
+# Telegram chat ID (can be negative for groups)
+TelegramChatID=ChatId
+EOF
+}
+
 # Read configuration from a file and set global variables accordingly. Validates required parameters and applies defaults for optional ones.
 read_config_runtime() {
     local file="$1"
     local key value
     local valid=true
-
-    # Check mandatory parameters
-    require_param "file" "$file" "read_config_runtime" || return 1
 
     # Ensure cfg dir
     [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
@@ -115,123 +153,10 @@ read_config_runtime() {
     return 0
 }
 
-default_config_notify() {
-    local file="$1"
-
-    # Check mandatory parameters
-    require_param "file" "$file" "default_config_notify" || return 1
-
-    # Create and write default config
-    cat <<"EOF" > "$file"
-# Minecraft Server Launcher Notification Configuration
-
-# Enable or disable notifications for server events.
-EnableNotification=false
-
-# Name of the server shown in notifications
-ServerName=My Minecraft Server
-
-# Discord webhook URL for server events
-DiscordWebHook=https://discord.com/api/webhooks/HooksId
-
-# Telegram bot token
-TelegramToken=TokenId
-
-# Telegram chat ID (can be negative for groups)
-TelegramChatID=ChatId
-EOF
-}
-
-read_config_notify() {
-    local file="$1"
-    local key value
-    local valid=true
-
-    # Check mandatory parameters
-    require_param "file" "$file" "read_config_notify" || return 1
-
-    # Ensure cfg dir
-    [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
-
-    # Check if config file exists
-    if [[ ! -f "$file" ]]; then
-        log_info "generating default notify configuration" "print"
-        default_config_notify "$file"
-    fi
-
-    # Check if config file is readable
-    while IFS='=' read -r key value; do
-        key="$(trim "$key")"
-        value="$(trim "$value")"
-
-        # Skip empty lines and comments
-        [[ -z "$key" || "$key" == \#* ]] && continue
-
-        case "$key" in
-            EnableNotification) ENABLE_NOTIFICATION="${value,,}" ;;
-            ServerName)         SERVER_NAME="$value"         ;;
-            DiscordWebHook)     DISCORD_WEBHOOK="$value"     ;;
-            TelegramToken)      TELEGRAM_TOKEN="$value"      ;;
-            TelegramChatID)     TELEGRAM_CHATID="$value"     ;;
-            *)
-                log_error "unknown config key: $key"
-                valid=false
-            ;;
-        esac
-    done < "$file"
-
-    #    # Validation (notify-specific)
-    if [[ ! "$ENABLE_NOTIFICATION" =~ ^(true|false)$ ]]; then
-        log_error "invalid EnableNotification value $ENABLE_NOTIFICATION (expected true|false)" "print"
-        valid=false
-    fi
-
-    if [[ "$ENABLE_NOTIFICATION" == "true" ]]; then
-        [[ -z "$SERVER_NAME" ]] && log_warn "ServerName is empty" "print"
-        [[ -z "$DISCORD_WEBHOOK" ]] && log_warn "DiscordWebHook is empty (Discord notifications disabled)" "print"
-        [[ -z "$TELEGRAM_TOKEN" || -z "$TELEGRAM_CHATID" ]] && log_warn "Telegram is not fully configured (missing token or chat ID)" "print"
-    fi
-
-    if [[ "$valid" != "true" ]]; then
-        log_error "notify configuration validation failed" "print"
-        return 1
-    fi
-
-    # Result
-    log_info "notify configuration loaded successfully"
-    return 0
-}
-
-default_config_backup() {
-    local file="$1"
-
-    # Check mandatory parameters
-    require_param "file" "$file" "default_config_backup" || return 1
-
-    # Create and write default config
-    cat <<"EOF" > "$file"
-# Minecraft Server Launcher Backup Configuration
-
-# Enable or disable automatic backups for the Minecraft server.
-EnableBackup=false
-
-# Backup archive format
-# Supported: zip, tar.gz, tar.bz2, tar.xz, tar.zst (if available)
-# zip is the default and most widely supported format. Requires zip installed on the system.
-BackupFormat=zip
-
-# Backup delay in minutes.
-BackupDelay=30
-EOF
-}
-
 read_config_backup() {
     local file="$1"
     local key value
     local valid=true
-
-    # Check mandatory parameters
-    require_param "file" "$file" "read_config_backup" || return 1
 
     # Ensure cfg dir
     [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
@@ -286,5 +211,62 @@ read_config_backup() {
 
     # Result
     log_info "backup configuration loaded successfully"
+    return 0
+}
+
+read_config_notify() {
+    local file="$1"
+    local key value
+    local valid=true
+
+    # Ensure cfg dir
+    [[ ! -d "$cfg_dir" ]] && mkdir -p "$cfg_dir"
+
+    # Check if config file exists
+    if [[ ! -f "$file" ]]; then
+        log_info "generating default notify configuration" "print"
+        default_config_notify "$file"
+    fi
+
+    # Check if config file is readable
+    while IFS='=' read -r key value; do
+        key="$(trim "$key")"
+        value="$(trim "$value")"
+
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" == \#* ]] && continue
+
+        case "$key" in
+            EnableNotification) ENABLE_NOTIFICATION="${value,,}" ;;
+            ServerName)         SERVER_NAME="$value"         ;;
+            DiscordWebHook)     DISCORD_WEBHOOK="$value"     ;;
+            TelegramToken)      TELEGRAM_TOKEN="$value"      ;;
+            TelegramChatID)     TELEGRAM_CHATID="$value"     ;;
+            *)
+                log_error "unknown config key: $key"
+                valid=false
+            ;;
+        esac
+    done < "$file"
+
+    #    # Validation (notify-specific)
+    if [[ ! "$ENABLE_NOTIFICATION" =~ ^(true|false)$ ]]; then
+        log_error "invalid EnableNotification value $ENABLE_NOTIFICATION (expected true|false)" "print"
+        valid=false
+    fi
+
+    if [[ "$ENABLE_NOTIFICATION" == "true" ]]; then
+        [[ -z "$SERVER_NAME" ]] && log_warn "ServerName is empty" "print"
+        [[ -z "$DISCORD_WEBHOOK" ]] && log_warn "DiscordWebHook is empty (Discord notifications disabled)" "print"
+        [[ -z "$TELEGRAM_TOKEN" || -z "$TELEGRAM_CHATID" ]] && log_warn "Telegram is not fully configured (missing token or chat ID)" "print"
+    fi
+
+    if [[ "$valid" != "true" ]]; then
+        log_error "notify configuration validation failed" "print"
+        return 1
+    fi
+
+    # Result
+    log_info "notify configuration loaded successfully"
     return 0
 }

@@ -20,7 +20,7 @@ readonly logs_dir="$mcsl_dir/logs"
 readonly core_dir="$mcsl_dir/src/lib/core"
 
 # Runtime directory and control files
-readonly runtime_dir="$mcsl_dir/runtime"
+readonly runtime_dir="$mcsl_dir/.runtime"
 readonly mcslctl="$runtime_dir/mcslctl"
 readonly uptimectl="$runtime_dir/uptimectl"
 readonly restartctl="$runtime_dir/restartctl"
@@ -32,8 +32,7 @@ crashctl=0
 # Check if loader module exists
 if [[ ! -f "$core_dir/loader.sh" ]]; then
     printf 'fatal: module loader.sh not found. required to execute script %s.\n' "$mcsl_name" >&2
-    read -r -n1 -t 30 -p "Press any key to exit..."
-    exit 1
+    read -r -n1 -t 30 -p "Press any key to exit..."; exit 1
 fi
 
 # Load loader module
@@ -62,7 +61,7 @@ log_debug "mcsl runtime control file created: $mcslctl"
 cd "$mcsl_dir/.."
 log_info "changing working directory to the Minecraft server root"
 
-# ===========================[ mcsl runtime core ]============================ #
+# ==============================[ runtime core ]============================== #
 
 while [[ "${statectl,,}" != "stop" ]]; do
     # Start timestamp
@@ -88,7 +87,7 @@ while [[ "${statectl,,}" != "stop" ]]; do
     # Log Minecraft server error
     if (( rc != 0 )); then
         log_error "Minecraft server start failed (cmd: $START_COMMAND, exit code: $rc)"
-        read -r -n1 -t 30 -p "Press any key to exit..."
+        read -r -n1 -t 30 -p "Press any key to continue..."
     fi
 
     # End timestamp

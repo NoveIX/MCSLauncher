@@ -15,13 +15,13 @@ load_module() {
     local module="$1"
 
     # Check mandatory parameters
-    if [[ -z $module ]]; then
+    if [[ -z "$module" ]]; then
         printf 'load_module: missing required parameter: module\n'
         return 1
     fi
 
     # Check if the module file exists
-    if [[ ! -f $module ]]; then
+    if [[ ! -f "$module" ]]; then
         printf 'load_module: module not found: %s\n' "$module"
         return 1
     fi
@@ -40,8 +40,8 @@ load_module() {
     LOADED_MODULES["$module"]=1
 }
 
-# Reset the loaded modules tracking array (useful for testing or reloading).
-reset_loaded_modules() {
-    unset LOADED_MODULES
-    declare -gA LOADED_MODULES
-}
+# Reset the loaded modules tracking array (useful for testing or reloading). - DEBUG FUNCTION
+#reset_loaded_modules() {
+#    unset LOADED_MODULES
+#    declare -gA LOADED_MODULES
+#}
