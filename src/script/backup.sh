@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# File: mcsl-backup.sh
+# File: backup.sh
 # Description: mcsl backup controller for Minecraft server
 # Author: NoveIX
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -50,11 +50,11 @@ load_module "$core_dir/tmux.sh" || exit 1
 load_module "$core_dir/filesystem.sh" || exit 1
 
 # Generate log setting
-log_setting "$logs_dir/mcsl-backup" "info" "print" "$log_mode"
+log_setting "$logs_dir/backup" "info" "print" "$log_mode"
 
 # Read mcsl backup config
 log_info "read mcsl backup config"
-read_config_backup "$cfg_dir/mcsl-backup.conf" || exit 1
+read_config_backup "$cfg_dir/backup.conf" || exit 1
 
 # Read world directory from server.properties
 log_info "read world directory from server.properties"

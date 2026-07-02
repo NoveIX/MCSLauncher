@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# File: mcsl-runtime.sh
+# File: runtime.sh
 # Description: mcsl runtime controller for Minecraft server
 # Author: NoveIX
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -47,12 +47,12 @@ load_module "$core_dir/common.sh" || exit 1
 load_module "$core_dir/notifier.sh" || exit 1
 
 # Generate log setting
-log_setting "$logs_dir/mcsl-runtime" "info" "print" "$log_mode"
+log_setting "$logs_dir/runtime" "info" "print" "$log_mode"
 
 # Read mcsl runtime config
 log_info "read mcsl config"
-read_config_runtime "$cfg_dir/mcsl-runtime.conf" || exit 1
-read_config_notify "$cfg_dir/mcsl-notify.conf" || true
+read_config_runtime "$cfg_dir/runtime.conf" || exit 1
+read_config_notify "$cfg_dir/notify.conf" || true
 
 # Create a control file to indicate that the mcsl runtime is up and running
 printf 'Minecraft Server Launcher Runtime Up\n' > "$mcslctl"

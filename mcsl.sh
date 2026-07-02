@@ -22,9 +22,9 @@ readonly commands_dir="$mcsl_dir/src/lib/commands"
 
 # Runtime directory and script
 readonly runtime_dir="$mcsl_dir/runtime"
-readonly mcsl_runtime="$mcsl_dir/src/script/mcsl-runtime.sh"
-readonly mcsl_backup="$mcsl_dir/src/script/mcsl-backup.sh"
-readonly mcsl_notify="$mcsl_dir/src/script/mcsl-notify.sh"
+readonly mcsl_runtime="$mcsl_dir/src/script/runtime.sh"
+readonly mcsl_backup="$mcsl_dir/src/script/backup.sh"
+readonly mcsl_notify="$mcsl_dir/src/script/notify.sh"
 
 # Runtime control scripts
 readonly restartctl="$runtime_dir/restartctl"

@@ -45,7 +45,7 @@ CrashHandle=true
 # Default: 3
 MaxRestart=3
 
-# Default log mode used by mcsl-runtime.
+# Default log mode used by runtime.
 # Valid values:
 #   separate - Creates dedicated log files for warnings, errors, and fatal messages.
 #   combined - Writes all log messages to a single file.
